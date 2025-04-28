@@ -87,14 +87,14 @@ export default function LoginPage() {
   return (
     <>
       <Navbar />
-      <main className="flex flex-col items-center justify-center h-screen">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold mb-4">Welcome to SCU News Room</h1>
+      <main className="flex flex-col items-center pt-60 bg-white min-h-screen">
+        <div className="text-center bg-red-700 rounded-lg p-20">
+          <h1 className="text-5xl font-bold mb-4">SCU Newsroom</h1>
           <h1 className="text-3xl font-bold mb-6">Login</h1>
           {error && <p className="text-red-600 mb-4">{error}</p>}
           <button
             onClick={handleGoogleLogin}
-            className="bg-blue-600 text-white px-4 py-2 rounded"
+            className="bg-yellow-400 hover:bg-gray-400 text-white px-4 py-2 rounded cursor-pointer"
           >
             Sign in with Google
           </button>

@@ -36,10 +36,8 @@ export default function PreferencesPage() {
       );
       console.log('Preferences saved successfully!');
 
-      // Trigger the hidden button to set role and email
-      hiddenButtonRef.current?.click();
-
-      router.push('/'); // Redirect to homepage after saving preferences
+      // Redirect to the Newsroom page
+      router.push('/Newsroom');
     } catch (error) {
       console.error('Error saving preferences:', error);
     }

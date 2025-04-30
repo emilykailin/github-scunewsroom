@@ -31,7 +31,7 @@ export default function Navbar() {
   }, []);
 
   return (
-    <nav className="bg-white shadow-md">
+    <nav className="bg-white">
       <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
         <Link href="/" className="flex items-center">
           <Image
@@ -44,14 +44,14 @@ export default function Navbar() {
         </Link>
         <div className="flex items-center space-x-8 text-lg">
           {isAdmin && (
-            <Link href="/Post" className="text-gray-700 hover:text-red-600">
+            <Link href="/Post" className="text-gray-700 hover:text-red-600 text-xl">
               Post
             </Link>
           )}
-          <Link href="/" className="text-gray-700 hover:text-red-600">
+          <Link href="/" className="text-gray-700 hover:text-red-600 text-xl">
             Newsroom
           </Link>
-          <Link href="/ForYou" className="text-gray-700 hover:text-red-600">
+          <Link href="/ForYou" className="text-gray-700 hover:text-red-600 text-xl">
             For You
           </Link>
           <Link href="/Favorites" className="text-gray-700 hover:text-red-600 flex items-center">

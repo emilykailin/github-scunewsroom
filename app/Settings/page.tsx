@@ -80,12 +80,12 @@ export default function SettingsPage() {
   return (
     <ProtectedRoute>
       <Navbar /> {/* Add Navbar here */}
-      <main className="p-4">
+      <main className="max-w-7xl mx-auto px-4 py-10 bg-white min-h-screen">
         <h1 className="text-2xl font-bold mb-4">Settings</h1>
         <div className="mb-4">
           <h2 className="text-lg font-semibold">Categories</h2>
           <div className="flex flex-col space-y-2">
-            {['Arts & Sciences', 'Business', 'Engineering'].map((category) => (
+            {['Arts & Sciences', 'Business', 'Engineering', 'Art History', 'On-Campus Housing', 'Into The Wild', 'Club Sports', 'Athletics', 'Preforming Arts', 'SCAPP', 'ASG', 'APB'].map((category) => (
               <label key={category} className="flex items-center space-x-2">
                 <input
                   type="checkbox"
@@ -114,19 +114,19 @@ export default function SettingsPage() {
         </div>
         <button
           onClick={handleSavePreferences}
-          className="bg-blue-600 text-white px-4 py-2 rounded mb-4"
+          className="bg-yellow-400 hover:bg-gray-400 text-white px-4 py-2 mr-4 rounded cursor-pointer"
         >
           Save Preferences
         </button>
         <button
           onClick={handleRequestAdminAccess}
-          className="bg-red-600 text-white px-4 py-2 rounded mb-4"
+          className="bg-red-600 hover:bg-red-400 text-white px-4 py-2 rounded mb-4 mr-4 cursor-pointer"
         >
           Request Admin Access
         </button>
         <button
           onClick={handleLogout}
-          className="bg-gray-600 text-white px-4 py-2 rounded"
+          className="bg-gray-600 hover:bg-gray-400 cursor-pointer text-white px-4 py-2 rounded"
         >
           Log Out
         </button>

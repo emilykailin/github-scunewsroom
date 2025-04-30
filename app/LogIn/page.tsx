@@ -89,8 +89,8 @@ export default function LoginPage() {
       <Navbar />
       <main className="flex flex-col items-center pt-60 bg-white min-h-screen">
         <div className="text-center bg-red-700 rounded-lg p-20">
-          <h1 className="text-5xl font-bold mb-4">SCU Newsroom</h1>
-          <h1 className="text-3xl font-bold mb-6">Login</h1>
+          <h1 className="text-5xl font-bold mb-4 text-white">SCU Newsroom</h1>
+          <h1 className="text-3xl font-bold mb-6 text-white">Login</h1>
           {error && <p className="text-red-600 mb-4">{error}</p>}
           <button
             onClick={handleGoogleLogin}

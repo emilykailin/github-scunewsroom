@@ -68,25 +68,38 @@ export default function PreferencesPage() {
   return (
     <>
       <Navbar />
-      <main className="p-4">
-        <h1 className="text-2xl font-bold mb-4">Choose Your Preferences</h1>
-        <div className="mb-4">
-          <h2 className="text-lg font-semibold">Categories</h2>
-          <div className="flex flex-col space-y-2">
-            {['Arts & Sciences', 'Business', 'Engineering'].map((category) => (
-              <label key={category} className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  value={category}
-                  checked={categories.includes(category)}
-                  onChange={() => handleCategoryChange(category)}
-                />
-                <span>{category}</span>
-              </label>
-            ))}
-          </div>
+      <main className="max-w-7xl mx-auto px-4 py-10 bg-white min-h-screen">
+        <h1 className="text-4xl text-black font-bold mb-4">Choose Your Preferences</h1>
+        <div className="mb-4 text-black">
+          <h2 className="text-lg font-light">Pick at least three topics you are interested in at Santa Clara to help us curate your For You page.</h2>
+          <div className="flex flex-wrap gap-2 pt-4">
+              {['Arts & Sciences', 'Business', 'Engineering', 'Art History', 'On-Campus Housing', 'Into The Wild', 'Club Sports', 'Athletics', 'Preforming Arts', 'SCAPP', 'ASG', 'APB'].map((category) => {
+                const isSelected = categories.includes(category);
+                return (
+                  <label
+                    key={category}
+                    className={`cursor-pointer text-xl px-4 py-2 rounded text-sm font-medium transition 
+                      ${
+                        isSelected
+                          ? 'bg-gray-700 text-white'
+                          : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+                      }`}
+                  >
+                    <input
+                      type="checkbox"
+                      value={category}
+                      checked={isSelected}
+                      onChange={() => handleCategoryChange(category)}
+                      className="hidden"
+                    />
+                    {category}
+                  </label>
+                );
+              })}
+            </div>
+
         </div>
-        <div className="mb-4">
+        <div className="mb-4 text-black">
           <h2 className="text-lg font-semibold">Weekly Top 5</h2>
           <label className="flex items-center space-x-2">
             <input
@@ -102,7 +115,7 @@ export default function PreferencesPage() {
         </div>
         <button
           onClick={handleSavePreferences}
-          className="bg-blue-600 text-white px-4 py-2 rounded"
+          className="bg-yellow-400 hover:bg-gray-400 text-white px-4 py-2 rounded cursor-pointer"
         >
           Save Preferences
         </button>

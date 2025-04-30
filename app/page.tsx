@@ -1,29 +1,29 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { collection, getDocs } from 'firebase/firestore';
-import { db } from '../firebase';
-import LoginPage from './LogIn/page';
+import { useRouter } from 'next/navigation';
+import { auth } from '../firebase'; // Import Firebase auth
+import NewsroomPage from './Newsroom/page'; // Import the Newsroom page
 
-export default function NewsroomPage() {
-  const [articles, setArticles] = useState<{ id: string; title?: string; content?: string; author?: string }[]>([]);
+export default function RootPage() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
-    const fetchArticles = async () => {
-      const querySnapshot = await getDocs(collection(db, 'articles'));
-      const articlesData = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setArticles(articlesData);
-    };
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        setIsAuthenticated(true); // User is logged in
+      } else {
+        router.push('/LogIn'); // Redirect to LogIn if not logged in
+      }
+    });
 
-    fetchArticles();
-  }, []);
+    return () => unsubscribe(); // Cleanup the listener on unmount
+  }, [router]);
 
-  return (
-    <>
-      <LoginPage></LoginPage>
-    </>
-  );
+  if (!isAuthenticated) {
+    return null; // Render nothing while redirecting
+  }
+
+  return <NewsroomPage />; // Render the Newsroom page if authenticated
 }

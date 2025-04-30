@@ -78,7 +78,10 @@ export default function LoginPage() {
         },
         { merge: true } // Merge fields instead of overwriting
       );
-      router.push('/'); // Redirect to homepage after saving preferences
+      console.log('Preferences saved successfully!');
+
+      // Redirect to the Newsroom page
+      router.push('/Newsroom');
     } catch (error) {
       console.error('Error saving preferences:', error);
     }

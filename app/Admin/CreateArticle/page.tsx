@@ -8,6 +8,7 @@ import { auth, db } from '../../../firebase';
 export default function CreateArticlePage() {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
+  const [category, setCategory] = useState('');
   const router = useRouter();
 
   const handleCreateArticle = async () => {
@@ -18,6 +19,7 @@ export default function CreateArticlePage() {
       await addDoc(collection(db, 'articles'), {
         title,
         content,
+        category,
         author: user.email,
         createdAt: new Date(),
       });
@@ -44,6 +46,14 @@ export default function CreateArticlePage() {
         onChange={(e) => setContent(e.target.value)}
         className="border p-2 mb-4 w-full"
       />
+      <input
+        type="text"
+        placeholder="Category (e.g., Engineering, Business)"
+        value={category}
+        onChange={(e) => setCategory(e.target.value)}
+        className="border p-2 mb-4 w-full"
+        />
+
       <button
         onClick={handleCreateArticle}
         className="bg-blue-600 text-white px-4 py-2 rounded"

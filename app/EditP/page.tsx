@@ -112,7 +112,11 @@ export default function EditPPage() {
         {existingImageUrl && (
           <div className="mb-4">
             <p className="text-gray-600">Current Image:</p>
-            <img src={existingImageUrl} alt="Current Post" className="w-full h-auto mt-2" />
+            <img
+              src={existingImageUrl}
+              alt="Current Post"
+              className="w-1/4 h-auto mt-2" // Set width to 1/4 of the container
+            />
           </div>
         )}
         <input

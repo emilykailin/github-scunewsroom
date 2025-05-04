@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { collection, query, where, getDocs, addDoc, serverTimestamp, doc, getDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { collection, query, where, getDocs, addDoc, serverTimestamp, doc, getDoc, deleteDoc, updateDoc } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { auth, db, storage } from '../../firebase';
 import Navbar from '@/components/navbar';
 
@@ -108,6 +108,57 @@ export default function PostPage() {
     }
   };
 
+  const handleDeletePost = async (postId: string, imageUrl: string) => {
+    try {
+      // Delete the image from Firebase Storage
+      const imageRef = ref(storage, imageUrl);
+      await deleteObject(imageRef);
+
+      // Delete the post from Firestore
+      await deleteDoc(doc(db, 'posts', postId));
+
+      alert('Post deleted successfully!');
+      const user = auth.currentUser;
+      if (user) fetchUserPosts(user.uid); // Refresh the user's posts
+    } catch (error) {
+      console.error('Error deleting post:', error);
+    }
+  };
+
+  const handleEditPost = async (postId: string, updatedTitle: string, updatedContent: string, newImage?: File) => {
+    try {
+      let updatedImageUrl = null;
+
+      if (newImage) {
+        const user = auth.currentUser;
+        if (!user) return;
+
+        // Upload the new image to Firebase Storage
+        const imageRef = ref(storage, `posts/${user.uid}/${newImage.name}`);
+        await uploadBytes(imageRef, newImage);
+        updatedImageUrl = await getDownloadURL(imageRef);
+      }
+
+      // Update the post in Firestore
+      const updatedData: any = {
+        title: updatedTitle,
+        content: updatedContent,
+      };
+
+      if (updatedImageUrl) {
+        updatedData.imageUrl = updatedImageUrl;
+      }
+
+      await updateDoc(doc(db, 'posts', postId), updatedData);
+
+      alert('Post updated successfully!');
+      const user = auth.currentUser;
+      if (user) fetchUserPosts(user.uid); // Refresh the user's posts
+    } catch (error) {
+      console.error('Error updating post:', error);
+    }
+  };
+
   if (loading) {
     return <p>Loading...</p>; // Show a loading message while checking role
   }
@@ -159,6 +210,26 @@ export default function PostPage() {
               <p className="text-sm text-gray-500">
                 Posted on {new Date(post.createdAt?.seconds * 1000).toLocaleString()}
               </p>
+              <div className="flex space-x-4 mt-4">
+                <button
+                  onClick={() =>
+                    handleEditPost(
+                      post.id,
+                      prompt('Edit Title:', post.title) || post.title,
+                      prompt('Edit Content:', post.content) || post.content
+                    )
+                  }
+                  className="bg-yellow-500 text-white px-4 py-2 rounded"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => handleDeletePost(post.id, post.imageUrl)}
+                  className="bg-red-600 text-white px-4 py-2 rounded"
+                >
+                  Delete
+                </button>
+              </div>
             </div>
           ))}
         </div>

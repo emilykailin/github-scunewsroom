@@ -15,12 +15,24 @@ export default function Navbar() {
   useEffect(() => {
     const fetchUserRole = async () => {
       const user = auth.currentUser;
-      if (!user) return;
+      if (!user) {
+        console.log("No user is logged in.");
+        return;
+      }
+
+      console.log("Authenticated user:", user);
 
       try {
         const userDoc = await getDoc(doc(db, "users", user.uid));
-        if (userDoc.exists() && userDoc.data().role === "admin") {
-          setIsAdmin(true); // User is an admin
+        if (userDoc.exists()) {
+          console.log("User document:", userDoc.data());
+          if (userDoc.data().role === "admin") {
+            setIsAdmin(true); // User is an admin
+          } else {
+            console.log("User is not an admin.");
+          }
+        } else {
+          console.log("User document does not exist.");
         }
       } catch (error) {
         console.error("Error fetching user role:", error);

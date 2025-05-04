@@ -24,6 +24,7 @@ export default function LoginPage() {
       const user = result.user;
 
       if (user.email && user.email.endsWith('@scu.edu')) {
+        console.log('Authenticated user UID:', user.uid);
         const userDocRef = doc(db, 'users', user.uid);
         const userDoc = await getDoc(userDocRef);
 
@@ -86,6 +87,12 @@ export default function LoginPage() {
       console.error('Error saving preferences:', error);
     }
   };
+
+  const user = auth.currentUser;
+  if (!user) {
+    alert('You must be logged in to update the post.');
+    return;
+  }
 
   return (
     <>

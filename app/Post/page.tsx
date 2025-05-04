@@ -205,7 +205,11 @@ export default function PostPage() {
               <h3 className="text-lg font-bold">{post.title}</h3>
               <p className="text-gray-600">{post.content}</p>
               {post.imageUrl && (
-                <img src={post.imageUrl} alt={post.title} className="w-full h-auto mt-4" />
+                <img
+                  src={post.imageUrl}
+                  alt={post.title}
+                  className="w-1/4 h-auto mt-4" // Set width to 1/4 of the container
+                />
               )}
               <p className="text-sm text-gray-500">
                 Posted on {new Date(post.createdAt?.seconds * 1000).toLocaleString()}

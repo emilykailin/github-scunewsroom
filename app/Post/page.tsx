@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { doc, getDoc, addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { collection, query, where, getDocs, addDoc, serverTimestamp, doc, getDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { auth, db, storage } from '../../firebase';
 import Navbar from '@/components/navbar';
@@ -13,25 +13,39 @@ export default function PostPage() {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [image, setImage] = useState<File | null>(null);
+  const [posts, setPosts] = useState<
+    { id: string; title: string; content: string; imageUrl: string; createdAt: any }[]
+  >([]);
   const router = useRouter();
 
   useEffect(() => {
     const checkAdminRole = async () => {
       const user = auth.currentUser;
       if (!user) {
+        console.log("No user is logged in.");
         router.push('/Newsroom'); // Redirect to Newsroom if not authenticated
+        setLoading(false); // Stop loading
         return;
       }
 
       try {
         const userDoc = await getDoc(doc(db, 'users', user.uid));
-        if (userDoc.exists() && userDoc.data().role === 'admin') {
-          setIsAdmin(true); // User is an admin
+        if (userDoc.exists()) {
+          console.log("User document:", userDoc.data());
+          const role = userDoc.data().role;
+          if (role === 'admin') {
+            setIsAdmin(true); // User is an admin
+            fetchUserPosts(user.uid); // Fetch the admin's posts
+          } else {
+            console.log("User is not an admin. Redirecting to Newsroom.");
+            router.push('/Newsroom'); // Redirect non-admins to Newsroom
+          }
         } else {
-          router.push('/Newsroom'); // Redirect non-admins to Newsroom
+          console.log("User document does not exist. Redirecting to Newsroom.");
+          router.push('/Newsroom'); // Redirect if user document does not exist
         }
       } catch (error) {
-        console.error('Error checking admin role:', error);
+        console.error("Error checking admin role:", error);
         router.push('/Newsroom'); // Redirect on error
       } finally {
         setLoading(false); // Stop loading
@@ -41,44 +55,54 @@ export default function PostPage() {
     checkAdminRole();
   }, [router]);
 
+  const fetchUserPosts = async (userId: string) => {
+    try {
+      const postsQuery = query(collection(db, 'posts'), where('authorId', '==', userId));
+      const querySnapshot = await getDocs(postsQuery);
+      const userPosts = querySnapshot.docs.map((doc) => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          title: data.title || '',
+          content: data.content || '',
+          imageUrl: data.imageUrl || '',
+          createdAt: data.createdAt || null,
+        };
+      });
+      console.log("Fetched user posts:", userPosts);
+      setPosts(userPosts);
+    } catch (error) {
+      console.error("Error fetching user posts:", error);
+    }
+  };
+
   const handleCreatePost = async () => {
-    console.log("Create Post button clicked"); // Debugging log
     if (!title || !content || !image) {
       alert('Please fill in all fields and upload an image.');
-      console.log("Missing fields: ", { title, content, image });
       return;
     }
 
     try {
       const user = auth.currentUser;
-      if (!user) {
-        console.error("User is not authenticated");
-        return;
-      }
-
-      console.log("Authenticated user:", user);
+      if (!user) return;
 
       // Upload the image to Firebase Storage
       const imageRef = ref(storage, `posts/${user.uid}/${image.name}`);
-      console.log("Uploading image to:", imageRef.fullPath);
       await uploadBytes(imageRef, image);
-      console.log("Image uploaded successfully");
-
       const imageUrl = await getDownloadURL(imageRef);
-      console.log("Image URL:", imageUrl);
 
       // Save the post metadata to Firestore
       await addDoc(collection(db, 'posts'), {
         title,
         content,
         imageUrl,
+        authorId: user.uid,
         author: user.email,
-        createdAt: serverTimestamp(), // Use server timestamp for sorting
+        createdAt: serverTimestamp(),
       });
-      console.log("Post saved to Firestore");
 
       alert('Post created successfully!');
-      router.push('/Newsroom'); // Redirect to Newsroom
+      fetchUserPosts(user.uid); // Refresh the user's posts
     } catch (error) {
       console.error('Error creating post:', error);
     }
@@ -122,6 +146,22 @@ export default function PostPage() {
         >
           Create Post
         </button>
+
+        <h2 className="text-xl font-bold mt-8">Your Posts</h2>
+        <div className="space-y-4">
+          {posts.map((post) => (
+            <div key={post.id} className="border p-4 rounded">
+              <h3 className="text-lg font-bold">{post.title}</h3>
+              <p className="text-gray-600">{post.content}</p>
+              {post.imageUrl && (
+                <img src={post.imageUrl} alt={post.title} className="w-full h-auto mt-4" />
+              )}
+              <p className="text-sm text-gray-500">
+                Posted on {new Date(post.createdAt?.seconds * 1000).toLocaleString()}
+              </p>
+            </div>
+          ))}
+        </div>
       </main>
     </>
   );

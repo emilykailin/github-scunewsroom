@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
-import { db } from '../../firebase';
+import { db, auth, storage } from '../../firebase';
 import Navbar from '@/components/navbar';
 
 export default function NewsroomPage() {
@@ -29,6 +29,9 @@ export default function NewsroomPage() {
 
     fetchPosts();
   }, []);
+
+  const user = auth.currentUser;
+  const imageRef = null; // Placeholder as 'image' is undefined
 
   return (
     <>

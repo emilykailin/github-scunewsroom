@@ -2,8 +2,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getFirestore, doc, setDoc } from "firebase/firestore"; // Import Firestore
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+import { getStorage } from "firebase/storage"; // Import Firebase Storage
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -20,6 +19,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 const db = getFirestore(app); // Initialize Firestore
+const storage = getStorage(app); // Initialize Firebase Storage
 
 const savePreferences = async (userId: string, preferences: object) => {
   try {
@@ -30,4 +30,4 @@ const savePreferences = async (userId: string, preferences: object) => {
   }
 };
 
-export { auth, provider, db, savePreferences, firebaseConfig }; // Export Firestore // Export Firestore
+export { auth, provider, db, storage, savePreferences, firebaseConfig }; // Export Firebase Storage

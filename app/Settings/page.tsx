@@ -79,10 +79,55 @@ export default function SettingsPage() {
 
   return (
     <ProtectedRoute>
-      <Navbar /> {/* Add Navbar here */}
+      <Navbar />
       <main className="p-4">
         <h1 className="text-2xl font-bold mb-4">Settings</h1>
-        <p className="text-gray-600">This is the "Settings" page.</p>
+        <div className="mb-6">
+          <h2 className="text-lg font-semibold">Categories</h2>
+          <div className="flex flex-wrap gap-2">
+            {['Category1', 'Category2', 'Category3'].map((category) => (
+              <label key={category} className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  checked={categories.includes(category)}
+                  onChange={() => handleCategoryChange(category)}
+                />
+                <span>{category}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+        <div className="mb-6">
+          <h2 className="text-lg font-semibold">Weekly Top 5</h2>
+          <label className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              checked={weeklyTop5}
+              onChange={(e) => setWeeklyTop5(e.target.checked)}
+            />
+            <span>Receive weekly top 5 stories</span>
+          </label>
+        </div>
+        <div className="flex space-x-4">
+          <button
+            onClick={handleSavePreferences}
+            className="bg-blue-600 text-white px-4 py-2 rounded"
+          >
+            Save Preferences
+          </button>
+          <button
+            onClick={handleRequestAdminAccess}
+            className="bg-gray-600 text-white px-4 py-2 rounded"
+          >
+            Request Admin Access
+          </button>
+          <button
+            onClick={handleLogout}
+            className="bg-red-600 text-white px-4 py-2 rounded"
+          >
+            Log Out
+          </button>
+        </div>
       </main>
     </ProtectedRoute>
   );

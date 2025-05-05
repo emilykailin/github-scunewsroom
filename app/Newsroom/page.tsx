@@ -14,16 +14,19 @@ export default function NewsroomPage() {
     const fetchPosts = async () => {
       const postsQuery = query(collection(db, 'posts'), orderBy('createdAt', 'desc'));
       const querySnapshot = await getDocs(postsQuery);
-      const postsData = querySnapshot.docs.map((doc) => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          title: data.title || '',
-          content: data.content || '',
-          imageUrl: data.imageUrl || '',
-          createdAt: data.createdAt || null,
-        };
-      });
+      const postsData = querySnapshot.docs
+        .map((doc) => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            title: data.title || '',
+            content: data.content || '',
+            imageUrl: data.imageUrl || '',
+            createdAt: data.createdAt || null,
+            hidden: data.hidden || false,
+          };
+        })
+        .filter((post) => !post.hidden); // Exclude hidden posts
       setPosts(postsData);
     };
 

@@ -59,20 +59,22 @@ export default function PostPage() {
     try {
       const postsQuery = query(collection(db, 'posts'), where('authorId', '==', userId));
       const querySnapshot = await getDocs(postsQuery);
-      const userPosts = querySnapshot.docs.map((doc) => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          title: data.title || '',
-          content: data.content || '',
-          imageUrl: data.imageUrl || '',
-          createdAt: data.createdAt || null,
-        };
-      });
-      console.log("Fetched user posts:", userPosts);
+      const userPosts = querySnapshot.docs
+        .map((doc) => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            title: data.title || '',
+            content: data.content || '',
+            imageUrl: data.imageUrl || '',
+            createdAt: data.createdAt || null,
+            hidden: data.hidden || false,
+          };
+        })
+        .filter((post) => !post.hidden); // Exclude hidden posts
       setPosts(userPosts);
     } catch (error) {
-      console.error("Error fetching user posts:", error);
+      console.error('Error fetching user posts:', error);
     }
   };
 
@@ -159,6 +161,22 @@ export default function PostPage() {
     }
   };
 
+  const handleHidePost = async (postId: string) => {
+    const confirmDelete = confirm('Are you sure you want to hide this post?');
+    if (!confirmDelete) return;
+  
+    try {
+      // Update the post in Firestore to set `hidden` to true
+      await updateDoc(doc(db, 'posts', postId), { hidden: true });
+  
+      alert('Post hidden successfully!');
+      const user = auth.currentUser;
+      if (user) fetchUserPosts(user.uid); // Refresh the user's posts
+    } catch (error) {
+      console.error('Error hiding post:', error);
+    }
+  };
+
   if (loading) {
     return <p>Loading...</p>; // Show a loading message while checking role
   }
@@ -222,10 +240,16 @@ export default function PostPage() {
                   Edit
                 </button>
                 <button
-                  onClick={() => handleDeletePost(post.id, post.imageUrl)}
+                  onClick={() => handleHidePost(post.id)}
                   className="bg-red-600 text-white px-4 py-2 rounded"
                 >
                   Delete
+                </button>
+                <button
+                  onClick={() => handleHidePost(post.id)}
+                  className="bg-gray-600 text-white px-4 py-2 rounded"
+                >
+                  Hide
                 </button>
               </div>
             </div>

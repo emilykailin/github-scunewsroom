@@ -19,6 +19,21 @@ export default function PostPage() {
   >([]);
   const router = useRouter();
 
+  const preferences = [
+    'Arts & Sciences',
+    'Business',
+    'Engineering',
+    'Art History',
+    'On-Campus Housing',
+    'Into The Wild',
+    'Club Sports',
+    'Athletics',
+    'Preforming Arts',
+    'SCAPP',
+    'ASG',
+    'APB',
+  ];
+
   useEffect(() => {
     const checkAdminRole = async () => {
       const user = auth.currentUser;
@@ -220,7 +235,7 @@ export default function PostPage() {
         <div className="mb-4">
           <h2 className="text-lg font-semibold">Categories</h2>
           <div className="flex flex-wrap gap-2">
-            {['Arts & Sciences', 'Business', 'Engineering', 'Athletics', 'Performing Arts'].map((category) => (
+            {preferences.map((category) => (
               <label key={category} className="flex items-center space-x-2">
                 <input
                   type="checkbox"

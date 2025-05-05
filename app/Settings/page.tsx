@@ -13,21 +13,6 @@ export default function SettingsPage() {
   const [weeklyTop5, setWeeklyTop5] = useState(false);
   const router = useRouter();
 
-  const preferences = [
-    'Arts & Sciences',
-    'Business',
-    'Engineering',
-    'Art History',
-    'On-Campus Housing',
-    'Into The Wild',
-    'Club Sports',
-    'Athletics',
-    'Preforming Arts',
-    'SCAPP',
-    'ASG',
-    'APB',
-  ];
-
   useEffect(() => {
     const fetchPreferences = async () => {
       const user = auth.currentUser;
@@ -100,7 +85,7 @@ export default function SettingsPage() {
         <div className="mb-6">
           <h2 className="text-lg font-semibold">Categories</h2>
           <div className="flex flex-wrap gap-2">
-            {preferences.map((category) => (
+            {['Category1', 'Category2', 'Category3'].map((category) => (
               <label key={category} className="flex items-center space-x-2">
                 <input
                   type="checkbox"

@@ -240,16 +240,10 @@ export default function PostPage() {
                   Edit
                 </button>
                 <button
-                  onClick={() => handleHidePost(post.id)}
+                  onClick={() => handleHidePost(post.id)} // Use the hide functionality
                   className="bg-red-600 text-white px-4 py-2 rounded"
                 >
                   Delete
-                </button>
-                <button
-                  onClick={() => handleHidePost(post.id)}
-                  className="bg-gray-600 text-white px-4 py-2 rounded"
-                >
-                  Hide
                 </button>
               </div>
             </div>

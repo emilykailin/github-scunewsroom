@@ -1,13 +1,13 @@
-// 'use client';
+'use client';
 
-// import { useEffect, useState } from 'react';
-// import { useRouter, useParams } from 'next/navigation';
-// import { doc, getDoc, updateDoc } from 'firebase/firestore';
-// import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-// import { db, storage } from '../../../firebase';
-// import Navbar from '@/components/navbar';
+import { useEffect, useState } from 'react';
+import { useRouter, useParams } from 'next/navigation';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db, storage } from '../../../firebase';
+import Navbar from '@/components/navbar';
 
-// export default function EditPostPage() {
+export default function EditPostPage() {
 //   const [title, setTitle] = useState('');
 //   const [content, setContent] = useState('');
 //   const [image, setImage] = useState<File | null>(null);
@@ -119,4 +119,4 @@
 //       </main>
 //     </>
 //   );
-// }
+}

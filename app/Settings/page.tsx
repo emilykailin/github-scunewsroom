@@ -95,8 +95,8 @@ export default function SettingsPage() {
   return (
     <ProtectedRoute>
       <Navbar />
-      <main className="p-4">
-        <h1 className="text-2xl font-bold mb-4">Settings</h1>
+      <main className="max-w-7xl mx-auto px-4 py-10 bg-white min-h-screen">
+         <h1 className="text-4xl text-black font-bold mb-4">Settings</h1>
         <div className="mb-6">
           <h2 className="text-lg font-semibold">Categories</h2>
           <div className="flex flex-wrap gap-2">
@@ -126,19 +126,19 @@ export default function SettingsPage() {
         <div className="flex space-x-4">
           <button
             onClick={handleSavePreferences}
-            className="bg-blue-600 text-white px-4 py-2 rounded"
+            className="bg-yellow-400 hover:bg-gray-400 text-white px-4 py-2 rounded cursor-pointer"
           >
             Save Preferences
           </button>
           <button
             onClick={handleRequestAdminAccess}
-            className="bg-gray-600 text-white px-4 py-2 rounded"
+            className="bg-gray-600 hover:bg-gray-400 text-white px-4 py-2 rounded cursor-pointer"
           >
             Request Admin Access
           </button>
           <button
             onClick={handleLogout}
-            className="bg-red-600 text-white px-4 py-2 rounded"
+            className="bg-red-600 hover:bg-red-400 text-white px-4 py-2 rounded cursor-pointer"
           >
             Log Out
           </button>

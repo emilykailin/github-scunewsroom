@@ -5,19 +5,19 @@ describe('Post Validation', () => {
     expect(validatePostData({ title: 'Hello', content: 'World' })).toBe(true);
   });
 
-  test('missing title throws error', () => {
+  test('no missing title', () => {
     expect(() => validatePostData({ title: '', content: 'Content' })).toThrow('Title is required');
   });
 
-  test('missing content throws error', () => {
+  test('no missing content', () => {
     expect(() => validatePostData({ title: 'Title', content: '' })).toThrow('Content is required');
   });
 
-  test('title with only spaces is invalid', () => {
+  test('no title with only spaces', () => {
     expect(() => validatePostData({ title: '   ', content: 'Content' })).toThrow('Title is required');
   });
 
-  test('content with only spaces is invalid', () => {
+  test('no content with only spaces', () => {
     expect(() => validatePostData({ title: 'Valid', content: '  ' })).toThrow('Content is required');
   });
 });

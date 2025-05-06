@@ -13,10 +13,26 @@ export default function PostPage() {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [image, setImage] = useState<File | null>(null);
+  const [categories, setCategories] = useState<string[]>([]); // New state for categories
   const [posts, setPosts] = useState<
-    { id: string; title: string; content: string; imageUrl: string; createdAt: any }[]
+    { id: string; title: string; content: string; imageUrl: string; createdAt: any; categories: string[] }[]
   >([]);
   const router = useRouter();
+
+  const preferences = [
+    'Arts & Sciences',
+    'Business',
+    'Engineering',
+    'Art History',
+    'On-Campus Housing',
+    'Into The Wild',
+    'Club Sports',
+    'Athletics',
+    'Preforming Arts',
+    'SCAPP',
+    'ASG',
+    'APB',
+  ];
 
   useEffect(() => {
     const checkAdminRole = async () => {
@@ -31,17 +47,14 @@ export default function PostPage() {
       try {
         const userDoc = await getDoc(doc(db, 'users', user.uid));
         if (userDoc.exists()) {
-          console.log("User document:", userDoc.data());
           const role = userDoc.data().role;
           if (role === 'admin') {
             setIsAdmin(true); // User is an admin
             fetchUserPosts(user.uid); // Fetch the admin's posts
           } else {
-            console.log("User is not an admin. Redirecting to Newsroom.");
             router.push('/Newsroom'); // Redirect non-admins to Newsroom
           }
         } else {
-          console.log("User document does not exist. Redirecting to Newsroom.");
           router.push('/Newsroom'); // Redirect if user document does not exist
         }
       } catch (error) {
@@ -59,26 +72,29 @@ export default function PostPage() {
     try {
       const postsQuery = query(collection(db, 'posts'), where('authorId', '==', userId));
       const querySnapshot = await getDocs(postsQuery);
-      const userPosts = querySnapshot.docs.map((doc) => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          title: data.title || '',
-          content: data.content || '',
-          imageUrl: data.imageUrl || '',
-          createdAt: data.createdAt || null,
-        };
-      });
-      console.log("Fetched user posts:", userPosts);
+      const userPosts = querySnapshot.docs
+        .map((doc) => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            title: data.title || '',
+            content: data.content || '',
+            imageUrl: data.imageUrl || '',
+            createdAt: data.createdAt || null,
+            categories: data.categories || [], // Include categories
+            hidden: data.hidden || false,
+          };
+        })
+        .filter((post) => !post.hidden); // Exclude hidden posts
       setPosts(userPosts);
     } catch (error) {
-      console.error("Error fetching user posts:", error);
+      console.error('Error fetching user posts:', error);
     }
   };
 
   const handleCreatePost = async () => {
-    if (!title || !content || !image) {
-      alert('Please fill in all fields and upload an image.');
+    if (!title || !content || !image || categories.length === 0) {
+      alert('Please fill in all fields, upload an image, and select at least one category.');
       return;
     }
 
@@ -96,6 +112,7 @@ export default function PostPage() {
         title,
         content,
         imageUrl,
+        categories, // Save selected categories
         authorId: user.uid,
         author: user.email,
         createdAt: serverTimestamp(),
@@ -159,6 +176,30 @@ export default function PostPage() {
     }
   };
 
+  const handleHidePost = async (postId: string) => {
+    const confirmDelete = confirm('Are you sure you want to hide this post?');
+    if (!confirmDelete) return;
+  
+    try {
+      // Update the post in Firestore to set `hidden` to true
+      await updateDoc(doc(db, 'posts', postId), { hidden: true });
+  
+      alert('Post hidden successfully!');
+      const user = auth.currentUser;
+      if (user) fetchUserPosts(user.uid); // Refresh the user's posts
+    } catch (error) {
+      console.error('Error hiding post:', error);
+    }
+  };
+
+  const handleCategoryChange = (category: string) => {
+    setCategories((prev) =>
+      prev.includes(category)
+        ? prev.filter((c) => c !== category)
+        : [...prev, category]
+    );
+  };
+
   if (loading) {
     return <p>Loading...</p>; // Show a loading message while checking role
   }
@@ -191,6 +232,21 @@ export default function PostPage() {
           onChange={(e) => setImage(e.target.files?.[0] || null)}
           className="mb-4"
         />
+        <div className="mb-4">
+          <h2 className="text-lg font-semibold">Categories</h2>
+          <div className="flex flex-wrap gap-2">
+            {preferences.map((category) => (
+              <label key={category} className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  checked={categories.includes(category)}
+                  onChange={() => handleCategoryChange(category)}
+                />
+                <span>{category}</span>
+              </label>
+            ))}
+          </div>
+        </div>
         <button
           onClick={handleCreatePost}
           className="bg-blue-600 text-white px-4 py-2 rounded"
@@ -208,9 +264,12 @@ export default function PostPage() {
                 <img
                   src={post.imageUrl}
                   alt={post.title}
-                  className="w-1/4 h-auto mt-4" // Set width to 1/4 of the container
+                  className="w-1/4 h-auto mt-4"
                 />
               )}
+              <p className="text-sm text-gray-500">
+                Categories: {post.categories.join(', ')}
+              </p>
               <p className="text-sm text-gray-500">
                 Posted on {new Date(post.createdAt?.seconds * 1000).toLocaleString()}
               </p>
@@ -222,7 +281,7 @@ export default function PostPage() {
                   Edit
                 </button>
                 <button
-                  onClick={() => handleDeletePost(post.id, post.imageUrl)}
+                  onClick={() => handleHidePost(post.id)} // Use the hide functionality
                   className="bg-red-600 text-white px-4 py-2 rounded"
                 >
                   Delete

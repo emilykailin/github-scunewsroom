@@ -71,7 +71,7 @@ export default function PreferencesPage() {
         <div className="mb-4 text-black">
           <h2 className="text-lg font-light">Pick at least three topics you are interested in at Santa Clara to help us curate your For You page.</h2>
           <div className="flex flex-wrap gap-2 pt-4">
-              {['Arts & Sciences', 'Business', 'Engineering', 'Art History', 'On-Campus Housing', 'Into The Wild', 'Club Sports', 'Athletics', 'Preforming Arts', 'SCAPP', 'ASG', 'APB'].map((category) => {
+              {['Arts & Sciences', 'Business', 'Engineering', 'Art History', 'On-Campus Housing', 'Into The Wild', 'Club Sports', 'Athletics', 'Performing Arts', 'SCAPP', 'ASG', 'APB'].map((category) => {
                 const isSelected = categories.includes(category);
                 return (
                   <label

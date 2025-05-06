@@ -5,7 +5,7 @@ import { getFirestore } from 'firebase/firestore';
 import { provider } from '../../firebase';
 import { signInWithPopup, signOut, getAuth } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/navbar';
 import { firebaseConfig } from '../../firebase';
@@ -17,6 +17,13 @@ const db = getFirestore(app);
 export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+
+  useEffect(() => {
+    const user = auth.currentUser;
+    if (user) {
+      router.push('/Newsroom'); // Redirect logged-in users to the Newsroom page
+    }
+  }, [router]);
 
   const handleGoogleLogin = async () => {
     try {
@@ -30,26 +37,21 @@ export default function LoginPage() {
 
         if (!userDoc.exists()) {
           console.log('Creating new user document...');
-          // Set default fields for new users
           await setDoc(
             userDocRef,
             {
-              role: 'user', // Default role
-              email: user.email, // User's email
-              adminRequest: false, // Default admin request status
-              categories: [], // Default empty preferences
-              weeklyTop5: false, // Default weekly top 5 subscription
+              role: 'user',
+              email: user.email,
+              adminRequest: false,
+              categories: [],
+              weeklyTop5: false,
             },
-            { merge: true } // Merge fields instead of overwriting
+            { merge: true }
           );
           console.log('New user document created in Firestore.');
         } else {
           console.log('User already exists in Firestore.');
         }
-
-        // Log the document data for debugging
-        const updatedUserDoc = await getDoc(userDocRef);
-        console.log('Updated user document:', updatedUserDoc.data());
 
         router.push('/Preferences'); // Redirect to preferences page
       } else {
@@ -61,38 +63,6 @@ export default function LoginPage() {
       setError('An error occurred during login. Please try again.');
     }
   };
-
-  const handleSavePreferences = async () => {
-    const user = auth.currentUser;
-    if (!user) return;
-
-    // Declare and initialize categories and weeklyTop5
-    const categories: string[] = []; // Example: empty array for categories
-    const weeklyTop5: boolean = false; // Example: default value for weeklyTop5
-
-    try {
-      await setDoc(
-        doc(db, 'users', user.uid),
-        {
-          categories,
-          weeklyTop5,
-        },
-        { merge: true } // Merge fields instead of overwriting
-      );
-      console.log('Preferences saved successfully!');
-
-      // Redirect to the Newsroom page
-      router.push('/Newsroom');
-    } catch (error) {
-      console.error('Error saving preferences:', error);
-    }
-  };
-
-  const user = auth.currentUser;
-  if (!user) {
-    alert('You must be logged in to update the post.');
-    return;
-  }
 
   return (
     <>

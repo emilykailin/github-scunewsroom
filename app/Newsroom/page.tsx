@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { collection, getDocs, query, orderBy, updateDoc, doc } from 'firebase/firestore';
+import { collection, getDocs, getDoc, query, orderBy, updateDoc, doc } from 'firebase/firestore';
 import { db, auth } from '../../firebase';
 import Navbar from '@/components/navbar';
 import { Star, Star as StarOutline } from "lucide-react";
@@ -16,10 +16,23 @@ export default function NewsroomPage() {
     const fetchPosts = async () => {
       const postsQuery = query(collection(db, 'posts'), orderBy('createdAt', 'desc'));
       const querySnapshot = await getDocs(postsQuery);
-      const postsData = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+      const postsData = querySnapshot.docs.map((doc) => {
+        const data = doc.data() as {
+          title: string;
+          content: string;
+          imageUrl: string;
+          createdAt: any;
+        };
+      
+        return {
+          id: doc.id,
+          title: data.title,
+          content: data.content,
+          imageUrl: data.imageUrl,
+          createdAt: data.createdAt,
+        };
+      });
+      
       setPosts(postsData);
     };
 
@@ -27,10 +40,12 @@ export default function NewsroomPage() {
       const user = auth.currentUser;
       if (!user) return;
 
-      const userDoc = await getDocs(doc(db, 'users', user.uid));
-      if (userDoc.exists()) {
-        setStarredPosts(userDoc.data().starredPosts || []);
+      const userDocRef = doc(db, 'users', user.uid);
+      const userDocSnap = await getDoc(userDocRef);
+      if (userDocSnap.exists()) {
+        setStarredPosts(userDocSnap.data().starredPosts || []);
       }
+      
     };
 
     fetchPosts();

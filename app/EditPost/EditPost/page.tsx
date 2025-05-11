@@ -8,6 +8,8 @@ import { db, storage } from '../../../firebase';
 import Navbar from '@/components/navbar';
 
 export default function EditPostPage() {
+    return <div>Edit Post</div>;
+
 //   const [title, setTitle] = useState('');
 //   const [content, setContent] = useState('');
 //   const [image, setImage] = useState<File | null>(null);

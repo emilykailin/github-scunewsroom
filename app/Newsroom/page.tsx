@@ -5,6 +5,7 @@ import { collection, getDocs, getDoc, query, orderBy, updateDoc, doc } from 'fir
 import { db, auth } from '../../firebase';
 import Navbar from '@/components/navbar';
 import { Star, Star as StarOutline } from "lucide-react";
+import { generateICS } from './generateICS';
 
 export default function NewsroomPage() {
   const [posts, setPosts] = useState<
@@ -65,6 +66,24 @@ export default function NewsroomPage() {
     setStarredPosts(updatedStarredPosts);
   };
 
+  const handleDownloadICS = (post: any) => {
+    // update this with proper event start/end times
+    const icsContent = generateICS({
+      title: post.title,
+      description: post.content,
+      start: new Date(post.createdAt?.seconds * 1000).toISOString(), // placeholder start time
+      end: new Date(post.createdAt?.seconds * 1000 + 3600000).toISOString(), // placeholder end time (1 hour later)
+      location: 'Santa Clara University', // update with a dynamic location
+    });
+    const blob = new Blob([icsContent], { type: 'text/calendar' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${post.title.replace(/\s+/g, '_')}.ics`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <>
       <Navbar />
@@ -95,6 +114,12 @@ export default function NewsroomPage() {
               <p className="text-sm text-gray-500">
                 Posted on {new Date(post.createdAt?.seconds * 1000).toLocaleString()}
               </p>
+              <button
+                onClick={() => handleDownloadICS(post)}
+                className="bg-green-600 text-white px-4 py-2 rounded mt-4"
+              >
+                Add to Calendar
+              </button>
             </div>
           ))}
         </div>

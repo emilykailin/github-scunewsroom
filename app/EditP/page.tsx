@@ -1,5 +1,8 @@
 'use client';
 
+export const dynamic = 'force-dynamic'; // Disable static export for this page
+
+
 import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';

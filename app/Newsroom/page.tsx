@@ -116,7 +116,7 @@ export default function NewsroomPage() {
               </p>
               <button
                 onClick={() => handleDownloadICS(post)}
-                className="bg-green-600 text-white px-4 py-2 rounded mt-4"
+                className="bg-yellow-400 hover:bg-gray-400 text-white mt-4 px-4 py-2 rounded cursor-pointer"
               >
                 Add to Calendar
               </button>

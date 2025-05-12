@@ -28,3 +28,4 @@ LOCATION:${escapeText(event.location)}
 END:VEVENT
 END:VCALENDAR
 `.trim();
+}

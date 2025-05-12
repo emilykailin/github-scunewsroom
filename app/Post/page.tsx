@@ -211,20 +211,20 @@ export default function PostPage() {
   return (
     <>
       <Navbar />
-      <main className="p-4">
-        <h1 className="text-2xl font-bold mb-4">Create a Post</h1>
+      <main className="max-w-7xl mx-auto px-4 py-10 bg-white min-h-screen">
+        <h1 className="text-4xl text-black font-bold mb-4">Create a Post</h1>
         <input
           type="text"
           placeholder="Title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="border p-2 mb-4 w-full"
+          className="border p-2 mb-4 w-full rounded"
         />
         <textarea
           placeholder="Content"
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          className="border p-2 mb-4 w-full"
+          className="border p-2 mb-4 w-full rounded"
         />
         <input
           type="file"
@@ -234,23 +234,36 @@ export default function PostPage() {
         />
         <div className="mb-4">
           <h2 className="text-lg font-semibold">Categories</h2>
-          <div className="flex flex-wrap gap-2">
-            {preferences.map((category) => (
-              <label key={category} className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  checked={categories.includes(category)}
-                  onChange={() => handleCategoryChange(category)}
-                />
-                <span>{category}</span>
-              </label>
-            ))}
+          <div className="flex flex-wrap gap-2 pt-4">
+            {preferences.map((category) => {
+              const isSelected = categories.includes(category);
+              return (
+                <label
+                  key={category}
+                  className={`cursor-pointer text-xl px-4 py-2 rounded text-sm font-medium transition 
+                    ${
+                      isSelected
+                        ? 'bg-gray-700 text-white'
+                        : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+                    }`}
+                >
+                  <input
+                    type="checkbox"
+                    value={category}
+                    checked={isSelected}
+                    onChange={() => handleCategoryChange(category)}
+                    className="hidden"
+                  />
+                  {category}
+                </label>
+              );
+            })}
           </div>
         </div>
         <button
           onClick={handleCreatePost}
-          className="bg-blue-600 text-white px-4 py-2 rounded"
-        >
+          className="bg-yellow-400 hover:bg-gray-400 text-white px-4 py-2 rounded cursor-pointer"
+       >
           Create Post
         </button>
 

@@ -99,17 +99,30 @@ export default function SettingsPage() {
          <h1 className="text-4xl text-black font-bold mb-4">Settings</h1>
         <div className="mb-6">
           <h2 className="text-lg font-semibold">Categories</h2>
-          <div className="flex flex-wrap gap-2">
-            {preferences.map((category) => (
-              <label key={category} className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  checked={categories.includes(category)}
-                  onChange={() => handleCategoryChange(category)}
-                />
-                <span>{category}</span>
-              </label>
-            ))}
+          <div className="flex flex-wrap gap-2 pt-4">
+            {preferences.map((category) => {
+              const isSelected = categories.includes(category);
+              return (
+                <label
+                  key={category}
+                  className={`cursor-pointer text-xl px-4 py-2 rounded text-sm font-medium transition 
+                    ${
+                      isSelected
+                        ? 'bg-gray-700 text-white'
+                        : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+                    }`}
+                >
+                  <input
+                    type="checkbox"
+                    value={category}
+                    checked={isSelected}
+                    onChange={() => handleCategoryChange(category)}
+                    className="hidden"
+                  />
+                  {category}
+                </label>
+              );
+            })}
           </div>
         </div>
         <div className="mb-6">

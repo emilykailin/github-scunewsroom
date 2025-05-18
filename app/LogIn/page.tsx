@@ -28,12 +28,15 @@ export default function LoginPage() {
   const handleGoogleLogin = async () => {
     try {
       const result = await signInWithPopup(auth, provider);
+      console.log("Signed in successfully");
       const user = result.user;
+      console.log("User:", user.uid, user.email);
 
       if (user.email && user.email.endsWith('@scu.edu')) {
         console.log('Authenticated user UID:', user.uid);
         const userDocRef = doc(db, 'users', user.uid);
         const userDoc = await getDoc(userDocRef);
+        console.log("Fetched user document:", userDoc.exists());
 
         if (!userDoc.exists()) {
           console.log('Creating new user document...');
@@ -58,9 +61,9 @@ export default function LoginPage() {
         await signOut(auth);
         setError('You must use an email ending with @scu.edu.');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Login error:', error);
-      setError('An error occurred during login. Please try again.');
+      setError(error.message || 'An error occurred during login. Please try again.');
     }
   };
 

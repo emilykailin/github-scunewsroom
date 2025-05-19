@@ -8,8 +8,17 @@ import { onAuthStateChanged } from 'firebase/auth';
 import Navbar from '@/components/navbar';
 import ProtectedRoute from '@/components/ProtectedRoute';
 
+type Post = {
+  id: string;
+  title: string;
+  content: string;
+  imageUrl?: string;
+  categories?: string[];
+  createdAt?: { seconds: number; nanoseconds: number };
+};
+
 export default function ForYouPage() {
-  const [forYouPosts, setForYouPosts] = useState([]);
+  const [forYouPosts, setForYouPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -39,7 +48,7 @@ export default function ForYouPage() {
         await Promise.all(starredPostIds.map(async (pid: string) => {
           const pSnap = await getDoc(doc(db, 'posts', pid));
           if (pSnap.exists()) {
-            (pSnap.data().categories || []).forEach((c) => favoriteCategories.add(c));
+            (pSnap.data().categories || []).forEach((c: string) => favoriteCategories.add(c));
           }
         }));
         console.log('Favorite-derived categories:', Array.from(favoriteCategories));
@@ -57,8 +66,11 @@ export default function ForYouPage() {
           orderBy('createdAt', 'desc')
         );
         const postsSnap = await getDocs(postsQ);
-        const allPosts = postsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-        console.log('Total posts fetched:', allPosts.length);
+        const allPosts: Post[] = postsSnap.docs.map(d => ({
+          id: d.id,
+          ...(d.data() as Omit<Post, 'id'>),
+        }));
+                console.log('Total posts fetched:', allPosts.length);
 
         const filtered = allPosts.filter((post) =>
           (post.categories || []).some((c) => combined.includes(c))
@@ -102,10 +114,13 @@ export default function ForYouPage() {
                     className="w-full h-auto mt-4"
                   />
                 )}
-                <p className="text-sm text-gray-500">
-                  Posted on{' '}
-                  {new Date(post.createdAt?.seconds * 1000).toLocaleString()}
-                </p>
+                {post.createdAt?.seconds ? (
+                  <p className="text-sm text-gray-500">
+                    Posted on {new Date(post.createdAt.seconds * 1000).toLocaleString()}
+                  </p>
+                ) : (
+                  <p className="text-sm text-gray-500">Posted on unknown date</p>
+                )}
               </div>
             ))}
           </div>

@@ -36,7 +36,7 @@ export default function ForYouPage() {
 
 
         const favoriteCategories = new Set<string>();
-        await Promise.all(starredPostIds.map(async (pid) => {
+        await Promise.all(starredPostIds.map(async (pid: string) => {
           const pSnap = await getDoc(doc(db, 'posts', pid));
           if (pSnap.exists()) {
             (pSnap.data().categories || []).forEach((c) => favoriteCategories.add(c));

@@ -61,9 +61,15 @@ export default function NewsroomPage() {
     const updatedStarredPosts = starredPosts.includes(postId)
       ? starredPosts.filter((id) => id !== postId)
       : [...starredPosts, postId];
-
-    await updateDoc(userDocRef, { starredPosts: updatedStarredPosts });
-    setStarredPosts(updatedStarredPosts);
+    
+    try {
+      await updateDoc(userDocRef, { starredPosts: updatedStarredPosts });
+      setStarredPosts(updatedStarredPosts);
+    }
+    catch(err) {
+      console.error('Failed to update favorites', err);
+    }
+    
   };
 
   const handleDownloadICS = (post: any) => {

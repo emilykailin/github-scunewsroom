@@ -17,15 +17,27 @@ export default function FavoritesPage() {
       if (!user) return;
 
       const userDoc = await getDoc(doc(db, 'users', user.uid));
-      if (userDoc.exists()) {
+      //??
+      if (userDoc.exists()) 
+      {
         const starredPostIds = userDoc.data().starredPosts || [];
+
         const posts = await Promise.all(
-          starredPostIds.map(async (postId: string) => {
-            const postDoc = await getDoc(doc(db, 'posts', postId));
+
+        starredPostIds.map(async (postId: string) => {
+          const postDoc = await getDoc(doc(db, 'posts', postId));
+          if (postDoc.exists()) {
             return { id: postId, ...postDoc.data() };
+          }
+          return null;
           })
         );
-        setStarredPosts(posts);
+
+        const filteredSortedPosts = posts
+        .filter(Boolean)
+        .sort((a, b) => b.createdAt?.seconds - a.createdAt?.seconds);
+
+        setStarredPosts(filteredSortedPosts);
       }
     };
 

@@ -72,17 +72,25 @@ export default function ForYouPage() {
         }));
                 console.log('Total posts fetched:', allPosts.length);
 
-        const filtered = allPosts.filter((post) =>
-          (post.categories || []).some((c) => combined.includes(c))
-        );
+        const filtered = allPosts.filter((post) =>{
+          const postCategories = post.categories || [];
+          const matchesCategory = postCategories.some((c) => combined.includes(c));
+          const isFavorited = starredPostIds.includes(post.id);
+          return matchesCategory || isFavorited;
+        });
         console.log('Posts after filter:', filtered.length);
 
         setForYouPosts(filtered);
-      } catch (err) {
-        console.error('Error fetching For You page data:', err);
-      } finally {
-        setLoading(false);
-      }
+        }//try 
+        
+        catch (err) 
+        {
+          console.error('Error fetching For You page data:', err);
+        } 
+        finally 
+        {
+          setLoading(false);
+        }
     });
 
     return () => unsubscribe();

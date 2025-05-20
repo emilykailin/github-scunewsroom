@@ -75,8 +75,8 @@ export default function NewsroomPage() {
     
   };
 
-  const handleDownloadICS = (post: any) => {
-    // update this with proper event start/end times
+  /*const handleDownloadICS = (post: any) => {
+    // update this with proper event start/end times?
     const icsContent = generateICS({
       title: post.title,
       description: post.content,
@@ -91,7 +91,26 @@ export default function NewsroomPage() {
     a.download = `${post.title.replace(/\s+/g, '_')}.ics`;
     a.click();
     URL.revokeObjectURL(url);
-  };
+  };*/
+
+  const handleAddtoGCal = (post:any) => {
+    if(!post.eventDate){
+      alert('No event date set.'); 
+      return; 
+    }
+    const startDate = new Date(post.eventDate); 
+    const endDate = new Date(startDate.getTime() + 60 *60 *1000); //rn, +1 hr
+
+    const formatDate = (date: Date) =>
+      date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+
+    const calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE` +  
+      `&text=${encodeURIComponent(post.title)}` +
+      `&dates=${formatDate(startDate)}/${formatDate(endDate)}` +
+      `&details=${encodeURIComponent(post.content)}`;
+
+    window.open(calendarUrl, '_blank'); 
+  }
 
   return (
     <>
@@ -129,7 +148,7 @@ export default function NewsroomPage() {
                 </p>
               )}
               <button
-                onClick={() => handleDownloadICS(post)}
+                onClick={() => handleAddtoGCal(post)}
                 className="bg-yellow-400 hover:bg-gray-400 text-white mt-4 px-4 py-2 rounded cursor-pointer"
               >
                 Add to Calendar

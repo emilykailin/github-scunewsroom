@@ -9,7 +9,7 @@ import { generateICS } from './generateICS';
 
 export default function NewsroomPage() {
   const [posts, setPosts] = useState<
-    { id: string; title: string; content: string; imageUrl: string; createdAt: any }[]
+    { id: string; title: string; content: string; imageUrl: string; createdAt: any; eventDate?: string; }[]
   >([]);
   const [starredPosts, setStarredPosts] = useState<string[]>([]);
 
@@ -23,6 +23,8 @@ export default function NewsroomPage() {
           content: string;
           imageUrl: string;
           createdAt: any;
+          eventDate?: string; // testing added this
+
         };
       
         return {
@@ -31,6 +33,7 @@ export default function NewsroomPage() {
           content: data.content,
           imageUrl: data.imageUrl,
           createdAt: data.createdAt,
+          eventDate: data.eventDate || '',
         };
       });
       
@@ -77,8 +80,8 @@ export default function NewsroomPage() {
     const icsContent = generateICS({
       title: post.title,
       description: post.content,
-      start: new Date(post.createdAt?.seconds * 1000).toISOString(), // placeholder start time
-      end: new Date(post.createdAt?.seconds * 1000 + 3600000).toISOString(), // placeholder end time (1 hour later)
+      start: new Date(post.eventDate ?? post.createdAt?.seconds * 1000).toISOString(), // placeholder start time
+      end: new Date(post.eventDate ?? post.createdAt?.seconds * 1000 + 3600000).toISOString(), // placeholder end time (1 hour later)
       location: 'Santa Clara University', // update with a dynamic location
     });
     const blob = new Blob([icsContent], { type: 'text/calendar' });
@@ -120,6 +123,11 @@ export default function NewsroomPage() {
               <p className="text-sm text-gray-500">
                 Posted on {new Date(post.createdAt?.seconds * 1000).toLocaleString()}
               </p>
+              {post.eventDate && post.eventDate.trim() !== '' && (
+                <p className="text-sm text-blue-600">
+                  Event Date: {new Date(post.eventDate).toLocaleDateString()}
+                </p>
+              )}
               <button
                 onClick={() => handleDownloadICS(post)}
                 className="bg-yellow-400 hover:bg-gray-400 text-white mt-4 px-4 py-2 rounded cursor-pointer"

@@ -12,10 +12,11 @@ export default function PostPage() {
   const [loading, setLoading] = useState(true);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
+  const [eventDate, setEventDate] = useState(''); //set event date
   const [image, setImage] = useState<File | null>(null);
   const [categories, setCategories] = useState<string[]>([]); // New state for categories
   const [posts, setPosts] = useState<
-    { id: string; title: string; content: string; imageUrl: string; createdAt: any; categories: string[] }[]
+    { id: string; title: string; content: string; imageUrl: string; createdAt: any; categories: string[]; eventDate?: string; }[]
   >([]);
   const router = useRouter();
 
@@ -82,6 +83,7 @@ export default function PostPage() {
             imageUrl: data.imageUrl || '',
             createdAt: data.createdAt || null,
             categories: data.categories || [], // Include categories
+            eventDate: data.eventDate || '',
             hidden: data.hidden || false,
           };
         })
@@ -116,6 +118,7 @@ export default function PostPage() {
         authorId: user.uid,
         author: user.email,
         createdAt: serverTimestamp(),
+        eventDate, //eventDate
       });
 
       alert('Post created successfully!');
@@ -232,6 +235,12 @@ export default function PostPage() {
           onChange={(e) => setImage(e.target.files?.[0] || null)}
           className="mb-4"
         />
+        <input //TYPE DATE
+          type="date"
+          value={eventDate}
+          onChange={(e) => setEventDate(e.target.value)}
+          className="border p-2 mb-4 w-full rounded"
+        /> 
         <div className="mb-4">
           <h2 className="text-lg font-semibold">Categories</h2>
           <div className="flex flex-wrap gap-2 pt-4">
@@ -286,6 +295,11 @@ export default function PostPage() {
               <p className="text-sm text-gray-500">
                 Posted on {new Date(post.createdAt?.seconds * 1000).toLocaleString()}
               </p>
+              {post.eventDate ? (
+              <p className="text-sm text-grey-600">
+                Event Date: {new Date(post.eventDate).toLocaleDateString()}
+              </p>
+              ) :null}
               <div className="flex space-x-4 mt-4">
                 <button
                   onClick={() => router.push(`/EditP?id=${post.id}`)} // Navigate to EditP with the post ID as a query parameter

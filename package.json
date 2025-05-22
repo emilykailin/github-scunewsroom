@@ -2,15 +2,19 @@
   "name": "scu-newsroom",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
     "test": "jest",
-    "lint": "next lint"
+    "lint": "next lint",
+    "send:weekly": "node weeklytop5/sendWeeklyEmails.cjs"
   },
   "dependencies": {
     "@sendgrid/mail": "^8.1.5",
+    "axios": "^1.9.0",
+    "dotenv": "^16.5.0",
     "firebase": "^11.6.1",
     "firebase-admin": "^13.2.0",
     "lucide-react": "^0.501.0",
@@ -36,6 +40,7 @@
     "react-testing-library": "^8.0.1",
     "tailwindcss": "^4",
     "ts-jest": "^29.3.2",
+    "ts-node": "^10.9.2",
     "typescript": "^5"
   }
 }

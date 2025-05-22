@@ -9,6 +9,10 @@ export async function POST(request: Request) {
   try {
     const { userId, subject, text, html } = await request.json();
 
+    if (!userId || !subject || !text || !html) {
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    }
+
     const userRef = doc(db, 'users', userId);
     const userSnap = await getDoc(userRef);
 
@@ -28,7 +32,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ message: 'Email sent successfully' });
   } catch (error: any) {
-    console.error('Email error:', error);
+    console.error('Email error:', error.response?.body || error.message || error);
     return NextResponse.json({ error: 'Failed to send email' }, { status: 500 });
   }
 }

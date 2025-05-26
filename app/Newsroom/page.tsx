@@ -6,10 +6,11 @@ import { db, auth } from '../../firebase';
 import Navbar from '@/components/navbar';
 import { Star, Star as StarOutline } from "lucide-react";
 import { generateICS } from './generateICS';
+import { Timestamp } from 'firebase/firestore';
 
 export default function NewsroomPage() {
   const [posts, setPosts] = useState<
-    { id: string; title: string; content: string; imageUrl: string; createdAt: any; eventDate?: string; }[]
+    { id: string; title: string; content: string; imageUrl: string; createdAt: any; eventDate?: Timestamp; }[]
   >([]);
   const [starredPosts, setStarredPosts] = useState<string[]>([]);
 
@@ -23,7 +24,7 @@ export default function NewsroomPage() {
           content: string;
           imageUrl: string;
           createdAt: any;
-          eventDate?: string; // testing added this
+          eventDate?: Timestamp; // testing added this
 
         };
       
@@ -33,7 +34,7 @@ export default function NewsroomPage() {
           content: data.content,
           imageUrl: data.imageUrl,
           createdAt: data.createdAt,
-          eventDate: data.eventDate || '',
+          eventDate: data.eventDate,
         };
       });
       
@@ -98,11 +99,17 @@ export default function NewsroomPage() {
       alert('No event date set.'); 
       return; 
     }
-    const startDate = new Date(post.eventDate); 
+    const startDate = post.eventDate.toDate(); 
     const endDate = new Date(startDate.getTime() + 60 *60 *1000); //rn, +1 hr
 
-    const formatDate = (date: Date) =>
-      date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    const formatDate = (timestamp: any) => {
+      const date =
+      timestamp instanceof Date
+        ? timestamp
+        : timestamp?.toDate?.() ?? new Date(timestamp);
+
+      return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    };
 
     const calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE` +  
       `&text=${encodeURIComponent(post.title)}` +
@@ -142,11 +149,11 @@ export default function NewsroomPage() {
               <p className="text-sm text-gray-500">
                 Posted on {new Date(post.createdAt?.seconds * 1000).toLocaleString()}
               </p>
-              {post.eventDate instanceof Date || post.eventDate?.toDate ? (
+              {post.eventDate?.toDate && (
                 <p className="text-sm text-blue-600">
-                Event Date: {new Date(post.eventDate?.seconds * 1000).toLocaleDateString()}
-               </p>
-              ) : null}
+                Event Date: {post.eventDate.toDate().toLocaleDateString()}
+                </p>
+              )}
               <button
                 onClick={() => handleAddtoGCal(post)}
                 className="bg-yellow-400 hover:bg-gray-400 text-white mt-4 px-4 py-2 rounded cursor-pointer"

@@ -6,6 +6,8 @@ import { collection, query, where, getDocs, addDoc, serverTimestamp, doc, getDoc
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { auth, db, storage } from '../../firebase';
 import Navbar from '@/components/navbar';
+import { Timestamp } from 'firebase/firestore';
+
 
 export default function PostPage() {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -16,7 +18,7 @@ export default function PostPage() {
   const [image, setImage] = useState<File | null>(null);
   const [categories, setCategories] = useState<string[]>([]); // New state for categories
   const [posts, setPosts] = useState<
-    { id: string; title: string; content: string; imageUrl: string; createdAt: any; categories: string[]; eventDate?: string; }[]
+    { id: string; title: string; content: string; imageUrl: string; createdAt: any; categories: string[]; eventDate?: Timestamp; }[]
   >([]);
   const router = useRouter();
 
@@ -118,7 +120,7 @@ export default function PostPage() {
         authorId: user.uid,
         author: user.email,
         createdAt: serverTimestamp(),
-        eventDate, //eventDate
+        eventDate: new Date(eventDate) ? Timestamp.fromDate(new Date(eventDate)) : null, //eventDate
       });
 
       alert('Post created successfully!');
@@ -295,11 +297,11 @@ export default function PostPage() {
               <p className="text-sm text-gray-500">
                 Posted on {new Date(post.createdAt?.seconds * 1000).toLocaleString()}
               </p>
-              {post.eventDate ? (
-              <p className="text-sm text-grey-600">
-                Event Date: {new Date(post.eventDate).toLocaleDateString()}
-              </p>
-              ) :null}
+              {post.eventDate?.toDate && (
+                <p className="text-sm text-grey-600">
+                Event Date: {post.eventDate.toDate().toLocaleDateString()}
+                </p>
+              )}
               <div className="flex space-x-4 mt-4">
                 <button
                   onClick={() => router.push(`/EditP?id=${post.id}`)} // Navigate to EditP with the post ID as a query parameter

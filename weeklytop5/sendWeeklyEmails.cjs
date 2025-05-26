@@ -18,15 +18,35 @@ const db = getFirestore();
 // Load SendGrid API Key
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-// 📰 Fetch the 5 most recent posts
-const fetchTopPosts = async () => {
+const { Timestamp } = require('firebase-admin/firestore');
+
+// Helper to get this week’s date range
+function getStartAndEndOfWeek() {
+  const now = new Date();
+  const start = new Date(now);
+  const end = new Date(now);
+  start.setDate(now.getDate() - now.getDay()); // Sunday
+  start.setHours(0, 0, 0, 0);
+  end.setDate(start.getDate() + 6); // Saturday
+  end.setHours(23, 59, 59, 999);
+  return {
+    start: Timestamp.fromDate(start),
+    end: Timestamp.fromDate(end),
+  };
+}
+
+// Fetch posts within this week
+const fetchRelevantPosts = async () => {
+  const { start } = getStartAndEndOfWeek();
   const postsSnapshot = await db
     .collection('posts')
-    .orderBy('createdAt', 'desc')
-    .limit(5)
+    .where('eventDate', '>=', start) // get all events from this week forward
     .get();
 
-  return postsSnapshot.docs.map((doc) => doc.data());
+  return postsSnapshot.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data(),
+  }));
 };
 
 // 📧 Generate dynamic email HTML from post data
@@ -89,31 +109,80 @@ const generateEmailHTML = (posts = []) => {
 // 📬 Send email to all users
 const sendWeeklyEmails = async () => {
   try {
-    const [usersSnapshot, posts] = await Promise.all([
-      db.collection('users').where('weeklyTop5', '==', true).get(),
-      fetchTopPosts(),
-    ]);
+    const [usersSnapshot, allPosts] = await Promise.all([
+    db.collection('users').where('weeklyTop5', '==', true).get(),
+    fetchRelevantPosts(),
+  ]);
 
-    const htmlContent = generateEmailHTML(posts);
     const sendEmailPromises = [];
 
-    usersSnapshot.forEach((doc) => {
-      const userData = doc.data();
-      const userEmail = userData.email;
+    usersSnapshot.forEach((userDoc) => {
+      const user = userDoc.data();
+      const userEmail = user.email;
+      const userCategories = user.categories || [];
 
-      if (userEmail) {
-        const msg = {
-          to: userEmail,
-          from: 'scunewsroom@gmail.com',
-          subject: 'Your Weekly Top 5',
-          html: htmlContent,
-        };
-        sendEmailPromises.push(sgMail.send(msg));
-      }
+      if (!userEmail) return;
+
+	console.log(`📦 Total posts this week: ${allPosts.length}`);
+	console.log(`🔍 User: ${userEmail}, Categories:`, userCategories);
+
+      // 1. Get 2 starred posts
+      const userStarredIds = user.starredPosts || [];
+
+      const starredPosts = allPosts
+      .filter(post =>
+         userStarredIds.includes(post.id)
+      )
+      .sort((a, b) => b.eventDate.toDate() - a.eventDate.toDate())
+      .slice(0, 2);
+
+      // 2. Get 3 category-matching posts, excluding starred
+      const matchingPosts = allPosts
+        .filter(
+        (post) =>
+        Array.isArray(post.categories) &&
+        post.categories.some((cat) => userCategories.includes(cat)) &&
+        !starredPosts.some((star) => star.id === post.id)
+      )
+        .sort((a, b) => b.eventDate.toDate() - a.eventDate.toDate())
+        .slice(0, 3);
+
+      let finalPosts = [...starredPosts, ...matchingPosts];
+
+      // 3. Fallback: if fewer than 5, fill with upcoming events
+      if (finalPosts.length < 5) {
+         const now = new Date();
+
+         const remainingPosts = allPosts
+         .filter(
+         post =>
+         post.eventDate.toDate() > now &&
+         !finalPosts.some((p) => p.id === post.id)
+         )
+      .sort((a, b) => a.eventDate.toDate() - b.eventDate.toDate())
+      .slice(0, 5 - finalPosts.length);
+
+      finalPosts = [...finalPosts, ...remainingPosts];
+     }
+
+      console.log(`⭐ Starred: ${starredPosts.length}, 🎯 Matching: ${matchingPosts.length}`);
+      console.log(`📥 Final post count (after fallback): ${finalPosts.length}`);
+
+
+      const htmlContent = generateEmailHTML(finalPosts);
+
+      const msg = {
+        to: userEmail,
+        from: 'scunewsroom@gmail.com',
+        subject: 'Your Weekly Top 5',
+        html: htmlContent,
+      };
+
+      sendEmailPromises.push(sgMail.send(msg));
     });
 
     await Promise.all(sendEmailPromises);
-    console.log(`✅ Sent ${sendEmailPromises.length} emails successfully.`);
+    console.log(`✅ Sent ${sendEmailPromises.length} personalized emails.`);
   } catch (error) {
     console.error('❌ Failed to send emails:', error);
   }

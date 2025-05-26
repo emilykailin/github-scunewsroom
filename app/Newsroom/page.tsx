@@ -142,11 +142,11 @@ export default function NewsroomPage() {
               <p className="text-sm text-gray-500">
                 Posted on {new Date(post.createdAt?.seconds * 1000).toLocaleString()}
               </p>
-              {post.eventDate && post.eventDate.trim() !== '' && (
+              {post.eventDate instanceof Date || post.eventDate?.toDate ? (
                 <p className="text-sm text-blue-600">
-                  Event Date: {new Date(post.eventDate).toLocaleDateString()}
-                </p>
-              )}
+                Event Date: {new Date(post.eventDate?.seconds * 1000).toLocaleDateString()}
+               </p>
+              ) : null}
               <button
                 onClick={() => handleAddtoGCal(post)}
                 className="bg-yellow-400 hover:bg-gray-400 text-white mt-4 px-4 py-2 rounded cursor-pointer"

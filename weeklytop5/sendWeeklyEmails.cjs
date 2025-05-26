@@ -52,14 +52,21 @@ const fetchRelevantPosts = async () => {
 // 📧 Generate dynamic email HTML from post data
 const generateEmailHTML = (posts = []) => {
   const postsHtml = posts.map(post => {
-    const formattedDate = post.createdAt?.toDate
-      ? post.createdAt.toDate().toLocaleDateString('en-US', {
-          weekday: 'short',
-          month: 'short',
-          day: 'numeric',
-          year: 'numeric'
-        })
-      : new Date(post.createdAt).toLocaleDateString();
+    const formattedDate = post.eventDate?.toDate
+      ? post.eventDate.toDate().toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    })
+  : post.eventDate?.seconds
+    ? new Date(post.eventDate.seconds * 1000).toLocaleDateString('en-US', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      })
+    : 'No Date';
 
     return `
       <div style="padding: 20px; border-bottom: 1px solid #ddd;">

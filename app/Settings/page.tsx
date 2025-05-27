@@ -22,7 +22,7 @@ export default function SettingsPage() {
     'Into The Wild',
     'Club Sports',
     'Athletics',
-    'Preforming Arts',
+    'Performing Arts',
     'SCAPP',
     'ASG',
     'APB',

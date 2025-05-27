@@ -268,10 +268,10 @@ export default function PostPage() {
         </button>
 
         <h2 className="text-xl font-bold mt-8">Your Posts</h2>
-        <div className="space-y-4">
+        <div className="columns-1 md:columns-2 lg:columns-3 gap-4 space-y-4">
           {posts.map((post) => (
-            <div key={post.id} className="border p-4 rounded">
-              <h3 className="text-lg font-bold">{post.title}</h3>
+            <div key={post.id} className="break-inside-avoid bg-gray-100 shadow p-4 rounded mb-4">
+              <h2 className="text-xl font-bold">{post.title}</h2>
               <p className="text-gray-600">{post.content}</p>
               {post.imageUrl && (
                 <img

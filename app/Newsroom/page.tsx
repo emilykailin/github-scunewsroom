@@ -10,7 +10,7 @@ import { Timestamp } from 'firebase/firestore';
 
 export default function NewsroomPage() {
   const [posts, setPosts] = useState<
-    { id: string; title: string; content: string; imageUrl: string; createdAt: any; eventDate?: string; }[]
+    { id: string; title: string; content: string; imageUrl: string; createdAt: any; eventDate?: Timestamp; }[]
   >([]);
   const [starredPosts, setStarredPosts] = useState<string[]>([]);
 
@@ -24,7 +24,7 @@ export default function NewsroomPage() {
           content: string;
           imageUrl: string;
           createdAt: any;
-          eventDate?: string; // testing added this
+          eventDate?: Timestamp; // testing added this
 
         };
       
@@ -34,7 +34,7 @@ export default function NewsroomPage() {
           content: data.content,
           imageUrl: data.imageUrl,
           createdAt: data.createdAt,
-          eventDate: data.eventDate || '',
+          eventDate: data.eventDate,
         };
       });
       
@@ -65,18 +65,24 @@ export default function NewsroomPage() {
     const updatedStarredPosts = starredPosts.includes(postId)
       ? starredPosts.filter((id) => id !== postId)
       : [...starredPosts, postId];
-
-    await updateDoc(userDocRef, { starredPosts: updatedStarredPosts });
-    setStarredPosts(updatedStarredPosts);
+    
+    try {
+      await updateDoc(userDocRef, { starredPosts: updatedStarredPosts });
+      setStarredPosts(updatedStarredPosts);
+    }
+    catch(err) {
+      console.error('Failed to update favorites', err);
+    }
+    
   };
 
-  const handleDownloadICS = (post: any) => {
-    // update this with proper event start/end times
+  /*const handleDownloadICS = (post: any) => {
+    // update this with proper event start/end times?
     const icsContent = generateICS({
       title: post.title,
       description: post.content,
-      start: new Date(post.createdAt?.seconds * 1000).toISOString(), // placeholder start time
-      end: new Date(post.createdAt?.seconds * 1000 + 3600000).toISOString(), // placeholder end time (1 hour later)
+      start: new Date(post.eventDate ?? post.createdAt?.seconds * 1000).toISOString(), // placeholder start time
+      end: new Date(post.eventDate ?? post.createdAt?.seconds * 1000 + 3600000).toISOString(), // placeholder end time (1 hour later)
       location: 'Santa Clara University', // update with a dynamic location
     });
     const blob = new Blob([icsContent], { type: 'text/calendar' });
@@ -86,7 +92,26 @@ export default function NewsroomPage() {
     a.download = `${post.title.replace(/\s+/g, '_')}.ics`;
     a.click();
     URL.revokeObjectURL(url);
-  };
+  };*/
+
+  const handleAddtoGCal = (post:any) => {
+    if(!post.eventDate){
+      alert('No event date set.'); 
+      return; 
+    }
+    const startDate = new Date(post.eventDate); 
+    const endDate = new Date(startDate.getTime() + 60 *60 *1000); //rn, +1 hr
+
+    const formatDate = (date: Date) =>
+      date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+
+    const calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE` +  
+      `&text=${encodeURIComponent(post.title)}` +
+      `&dates=${formatDate(startDate)}/${formatDate(endDate)}` +
+      `&details=${encodeURIComponent(post.content)}`;
+
+    window.open(calendarUrl, '_blank'); 
+  }
 
   return (
     <>
@@ -118,13 +143,13 @@ export default function NewsroomPage() {
               <p className="text-sm text-gray-500">
                 Posted on {new Date(post.createdAt?.seconds * 1000).toLocaleString()}
               </p>
-              {post.eventDate && post.eventDate.trim() !== '' && (
+              {post.eventDate instanceof Timestamp && (
                 <p className="text-sm text-blue-600">
-                  Event Date: {new Date(post.eventDate).toLocaleDateString()}
+                  Event Date: {post.eventDate.toDate().toLocaleDateString()}
                 </p>
               )}
               <button
-                onClick={() => handleDownloadICS(post)}
+                onClick={() => handleAddtoGCal(post)}
                 className="bg-yellow-400 hover:bg-gray-400 text-white mt-4 px-4 py-2 rounded cursor-pointer"
               >
                 Add to Calendar

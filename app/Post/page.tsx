@@ -232,6 +232,12 @@ export default function PostPage() {
           onChange={(e) => setImage(e.target.files?.[0] || null)}
           className="mb-4"
         />
+        <input //TYPE DATE
+          type="date"
+          value={eventDate}
+          onChange={(e) => setEventDate(e.target.value)}
+          className="border p-2 mb-4 w-full rounded"
+        /> 
         <div className="mb-4">
           <h2 className="text-lg font-semibold">Categories</h2>
           <div className="flex flex-wrap gap-2 pt-4">

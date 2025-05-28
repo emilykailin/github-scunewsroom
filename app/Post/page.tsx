@@ -14,6 +14,7 @@ export default function PostPage() {
   const [content, setContent] = useState('');
   const [image, setImage] = useState<File | null>(null);
   const [categories, setCategories] = useState<string[]>([]); // New state for categories
+  const [eventDate, setEventDate] = useState('');
   const [posts, setPosts] = useState<
     { id: string; title: string; content: string; imageUrl: string; createdAt: any; categories: string[] }[]
   >([]);
@@ -116,6 +117,8 @@ export default function PostPage() {
         authorId: user.uid,
         author: user.email,
         createdAt: serverTimestamp(),
+        eventDate: eventDate ? new Date(eventDate) : null // Save it
+
       });
 
       alert('Post created successfully!');

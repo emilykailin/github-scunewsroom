@@ -29,7 +29,7 @@ export default function PostPage() {
     'Into The Wild',
     'Club Sports',
     'Athletics',
-    'Preforming Arts',
+    'Performing Arts',
     'SCAPP',
     'ASG',
     'APB',

@@ -1,0 +1,33 @@
+name: Send Weekly Emails
+
+on:
+  schedule:
+    # Run at 10:00 AM PT (17:00 UTC) on May 28–30
+    - cron: '0 17 28 5 *'
+    - cron: '0 17 29 5 *'
+    - cron: '0 17 30 5 *'
+  workflow_dispatch:  # run manually for testing
+
+jobs:
+  send-emails:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run weekly email script
+        run: node sendWeeklyEmails.cjs
+        env:
+          SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN }}
+          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}

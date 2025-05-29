@@ -24,6 +24,20 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Debugging
+        run: |
+          echo "SENDGRID_API_KEY set? -> ${SENDGRID_API_KEY:+yes}"
+          echo "FIREBASE_PROJECT_ID set? -> ${FIREBASE_PROJECT_ID:+yes}"
+          echo "FIREBASE_AUTH_DOMAIN set? -> ${FIREBASE_AUTH_DOMAIN:+yes}"
+          echo "FIREBASE_API_KEY set? -> ${FIREBASE_API_KEY:+yes}"
+          echo "FIREBASE_SERVICE_ACCOUNT set? -> ${FIREBASE_SERVICE_ACCOUNT:+yes}"
+        env:
+          SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN }}
+          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+
       - name: Run weekly email script
         run: node weeklytop5/sendWeeklyEmails.cjs
         env:

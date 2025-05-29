@@ -25,7 +25,7 @@ jobs:
         run: npm install
 
       - name: Run weekly email script
-        run: node sendWeeklyEmails.cjs
+        run: node weeklytop5/sendWeeklyEmails.cjs
         env:
           SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
           FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}

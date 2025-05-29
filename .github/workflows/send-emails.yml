@@ -3,9 +3,8 @@ name: Send Weekly Emails
 on:
   schedule:
     # Run at 10:00 AM PT (17:00 UTC) on May 28–30
-    - cron: '0 18 29 5 *' #test
-    - cron: '30 18 29 5 *' #test
-    - cron: '0 17 30 5 *'
+    - cron: '0 17 30 5 *' #friday may 30 @10am
+    - cron: '0 17 1 6 *' #sunday june 1 @10am
   workflow_dispatch:  # run manually for testing
 
 jobs:

@@ -18,63 +18,72 @@ export default function EditPostPage() {
     const [existingImageUrl, setExistingImageUrl] = useState('');
     const [loading, setLoading] = useState(true);
     const router = useRouter();
-    const { id } = useParams(); // Get the post ID from the URL
+const { id } = useParams();
 
-    useEffect(() => {
-        const fetchPost = async () => {
-            try {
-                if (!id) {
-                    throw new Error('Post ID is undefined');
-                }
-                const postDoc = await getDoc(doc(db, 'posts', id));
-                if (postDoc.exists()) {
-                    const data = postDoc.data();
-                    setTitle(data.title || '');
-                    setContent(data.content || '');
-                    setExistingImageUrl(data.imageUrl || '');
-                } else {
-                    alert('Post not found!');
-                    router.push('/Post'); // Redirect back to the Post page if the post doesn't exist
-                }
-            } catch (error) {
-                console.error('Error fetching post:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchPost();
-    }, [id, router]);
-
-    const handleUpdatePost = async () => {
-        if (!title || !content) {
-            alert('Please fill in all fields.');
-            return;
-        }
-
+useEffect(() => {
+    const fetchPost = async () => {
         try {
-            let updatedImageUrl = existingImageUrl;
-
-            if (image) {
-                // Upload the new image to Firebase Storage
-                const imageRef = ref(storage, `posts/${id}/${image.name}`);
-                await uploadBytes(imageRef, image);
-                updatedImageUrl = await getDownloadURL(imageRef);
+            // Make sure id is a string and not undefined or an array
+            if (typeof id !== 'string') {
+                throw new Error('Invalid or missing post ID');
             }
 
-            // Update the post in Firestore
-            await updateDoc(doc(db, 'posts', id), {
-                title,
-                content,
-                imageUrl: updatedImageUrl,
-            });
+            const postRef = doc(db, 'posts', id);
+            const postDoc = await getDoc(postRef);
 
-            alert('Post updated successfully!');
-            router.push('/Post'); // Redirect back to the Post page
+            if (postDoc.exists()) {
+                const data = postDoc.data();
+                setTitle(data.title || '');
+                setContent(data.content || '');
+                setExistingImageUrl(data.imageUrl || '');
+            } else {
+                alert('Post not found!');
+                router.push('/Post');
+            }
         } catch (error) {
-            console.error('Error updating post:', error);
+            console.error('Error fetching post:', error);
+        } finally {
+            setLoading(false);
         }
     };
+
+    fetchPost();
+}, [id, router]);
+
+
+const handleUpdatePost = async () => {
+    if (!title || !content) {
+        alert('Please fill in all fields.');
+        return;
+    }
+
+    if (typeof id !== 'string') {
+        alert('Invalid post ID.');
+        return;
+    }
+
+    try {
+        let updatedImageUrl = existingImageUrl;
+
+        if (image) {
+            const imageRef = ref(storage, `posts/${id}/${image.name}`);
+            await uploadBytes(imageRef, image);
+            updatedImageUrl = await getDownloadURL(imageRef);
+        }
+
+        await updateDoc(doc(db, 'posts', id), {
+            title,
+            content,
+            imageUrl: updatedImageUrl,
+        });
+
+        alert('Post updated successfully!');
+        router.push('/Post');
+    } catch (error) {
+        console.error('Error updating post:', error);
+    }
+};
+
 
     if (loading) {
         return <p>Loading...</p>;
@@ -83,8 +92,8 @@ export default function EditPostPage() {
     return (
         <ProtectedRoute>
             <Navbar />
-            <main className="p-4">
-                <h1 className="text-2xl font-bold mb-4">Edit Post</h1>
+            <main className="max-w-7xl mx-auto px-4 py-10 bg-white min-h-screen">
+                <h1 className="text-4xl font-bold mb-4">Edit Post</h1>
                 <input
                     type="text"
                     placeholder="Title"
@@ -116,7 +125,7 @@ export default function EditPostPage() {
                 />
                 <button
                     onClick={handleUpdatePost}
-                    className="bg-blue-600 text-white px-4 py-2 rounded"
+                    className="bg-yellow-400 hover:bg-gray-400 text-white px-4 py-2 rounded cursor-pointer"
                 >
                     Update Post
                 </button>

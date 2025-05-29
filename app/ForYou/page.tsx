@@ -1,9 +1,93 @@
 'use client';
 
-import ProtectedRoute from '@/components/ProtectedRoute';
+import { useEffect, useState } from 'react';
+import { collection, query, where, getDocs, addDoc, serverTimestamp, doc, getDoc, deleteDoc, updateDoc, orderBy } from 'firebase/firestore';
+import { auth, db, storage } from '../../firebase';
+import { onAuthStateChanged } from 'firebase/auth';
+
 import Navbar from '@/components/navbar';
+import ProtectedRoute from '@/components/ProtectedRoute';
+
+type Post = {
+  id: string;
+  title: string;
+  content: string;
+  imageUrl?: string;
+  categories?: string[];
+  createdAt?: { seconds: number; nanoseconds: number };
+};
 
 export default function ForYouPage() {
+  const [forYouPosts, setForYouPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        setLoading(false);
+        return; // not logged in
+      }
+
+      try {
+        const userRef = doc(db, 'users', user.uid);
+        const userSnap = await getDoc(userRef);
+        if (!userSnap.exists()) {
+          console.warn('No user doc found for', user.uid);
+          setLoading(false);
+          return;
+        }
+        const userData = userSnap.data();
+        const userCategories = userData.categories || [];
+        const starredPostIds = userData.starredPosts || [];
+
+        console.log('User categories:', userCategories);
+        console.log('Starred post IDs:', starredPostIds);
+
+
+        const favoriteCategories = new Set<string>();
+        await Promise.all(starredPostIds.map(async (pid: string) => {
+          const pSnap = await getDoc(doc(db, 'posts', pid));
+          if (pSnap.exists()) {
+            (pSnap.data().categories || []).forEach((c: string) => favoriteCategories.add(c));
+          }
+        }));
+        console.log('Favorite-derived categories:', Array.from(favoriteCategories));
+
+        // Combining favorited posts and regular posts that match preferences
+        const combined = Array.from(new Set([
+          ...userCategories,
+          ...favoriteCategories,
+        ]));
+        console.log('Combined filter categories:', combined);
+
+        // Filtering posts locally to not mess with anything
+        const postsQ = query(
+          collection(db, 'posts'),
+          orderBy('createdAt', 'desc')
+        );
+        const postsSnap = await getDocs(postsQ);
+        const allPosts: Post[] = postsSnap.docs.map(d => ({
+          id: d.id,
+          ...(d.data() as Omit<Post, 'id'>),
+        }));
+                console.log('Total posts fetched:', allPosts.length);
+
+        const filtered = allPosts.filter((post) =>
+          (post.categories || []).some((c) => combined.includes(c))
+        );
+        console.log('Posts after filter:', filtered.length);
+
+        setForYouPosts(filtered);
+      } catch (err) {
+        console.error('Error fetching For You page data:', err);
+      } finally {
+        setLoading(false);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
   return (
     <ProtectedRoute>
       <Navbar />

@@ -33,30 +33,19 @@ export default function LoginPage() {
       console.log("User:", user.uid, user.email);
 
       if (user.email && user.email.endsWith('@scu.edu')) {
-        console.log('Authenticated user UID:', user.uid);
         const userDocRef = doc(db, 'users', user.uid);
         const userDoc = await getDoc(userDocRef);
-        console.log("Fetched user document:", userDoc.exists());
 
         if (!userDoc.exists()) {
-          console.log('Creating new user document...');
           await setDoc(
             userDocRef,
-            {
-              role: 'user',
-              email: user.email,
-              adminRequest: false,
-              categories: [],
-              weeklyTop5: false,
-            },
+            { role: 'user', email: user.email, adminRequest: false, categories: [], weeklyTop5: false },
             { merge: true }
           );
-          console.log('New user document created in Firestore.');
+          router.push('/Preferences');
         } else {
-          console.log('User already exists in Firestore.');
+          router.push('/Newsroom');
         }
-
-        router.push('/Preferences'); // Redirect to preferences page
       } else {
         await signOut(auth);
         setError('You must use an email ending with @scu.edu.');

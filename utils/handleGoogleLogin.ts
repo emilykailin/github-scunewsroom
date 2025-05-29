@@ -25,18 +25,13 @@ export const handleGoogleLogin = async ({
       if (!userDoc.exists()) {
         await setDoc(
           userDocRef,
-          {
-            role: 'user',
-            email: user.email,
-            adminRequest: false,
-            categories: [],
-            weeklyTop5: false,
-          },
+          { role:'user', email:user.email, adminRequest:false, categories:[], weeklyTop5:false },
           { merge: true }
         );
+        router.push('/Preferences');
+      } else {
+        router.push('/Newsroom');
       }
-
-      router.push('/Preferences');
     } else {
       await signOut(auth);
       setError('You must use an email ending with @scu.edu.');

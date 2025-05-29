@@ -5,7 +5,8 @@ const sgMail = require('@sendgrid/mail');
 const { initializeApp, cert } = require('firebase-admin/app');
 const { getFirestore } = require('firebase-admin/firestore');
 
-const serviceAccount = require(path.resolve(__dirname, '../serviceAccountKey.json'));
+//const serviceAccount = require(path.resolve(__dirname, '../serviceAccountKey.json'));
+const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 
 // Initialize Firebase
 initializeApp({

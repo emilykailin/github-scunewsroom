@@ -1,5 +1,5 @@
 const path = require('path');
-require('dotenv').config({ path: path.resolve(__dirname, '../.env.local') });
+//require('dotenv').config({ path: path.resolve(__dirname, '../.env.local') });
 
 const sgMail = require('@sendgrid/mail');
 const { initializeApp, cert } = require('firebase-admin/app');

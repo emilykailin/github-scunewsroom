@@ -1,9 +1,37 @@
 'use client';
 
-import ProtectedRoute from '@/components/ProtectedRoute';
+import { useEffect, useState } from 'react';
+import { doc, getDoc } from 'firebase/firestore';
+import { db, auth } from '../../firebase';
 import Navbar from '@/components/navbar';
+import ProtectedRoute from '@/components/ProtectedRoute';
 
 export default function FavoritesPage() {
+  const [starredPosts, setStarredPosts] = useState<
+    { id: string; title: string; content: string; imageUrl: string; createdAt: any }[]
+  >([]);
+
+  useEffect(() => {
+    const fetchStarredPosts = async () => {
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      if (userDoc.exists()) {
+        const starredPostIds = userDoc.data().starredPosts || [];
+        const posts = await Promise.all(
+          starredPostIds.map(async (postId: string) => {
+            const postDoc = await getDoc(doc(db, 'posts', postId));
+            return { id: postId, ...postDoc.data() };
+          })
+        );
+        setStarredPosts(posts);
+      }
+    };
+
+    fetchStarredPosts();
+  }, []);
+
   return (
     <ProtectedRoute>
       <Navbar />

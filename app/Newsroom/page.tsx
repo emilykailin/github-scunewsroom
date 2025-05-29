@@ -1,5 +1,6 @@
 'use client';
 
+import ProtectedRoute from '@/components/ProtectedRoute';
 import { useEffect, useState } from 'react';
 import { collection, getDocs, getDoc, query, orderBy, updateDoc, doc } from 'firebase/firestore';
 import { db, auth } from '../../firebase';
@@ -114,7 +115,7 @@ export default function NewsroomPage() {
   }
 
   return (
-    <>
+    <ProtectedRoute>
       <Navbar />
       <main className="max-w-7xl mx-auto px-4 py-10 bg-white min-h-screen">
         <h1 className="text-4xl text-black font-bold mb-4">Newsroom</h1>
@@ -158,6 +159,6 @@ export default function NewsroomPage() {
           ))}
         </div>
       </main>
-    </>
+    </ProtectedRoute>
   );
 }

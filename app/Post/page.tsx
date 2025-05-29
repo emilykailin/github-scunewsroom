@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { collection, query, where, getDocs, addDoc, serverTimestamp, doc, getDoc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { auth, db, storage } from '../../firebase';
+import ProtectedRoute from '@/components/ProtectedRoute';
 import Navbar from '@/components/navbar';
 
 export default function PostPage() {
@@ -212,7 +213,7 @@ export default function PostPage() {
   }
 
   return (
-    <>
+    <ProtectedRoute>
       <Navbar />
       <main className="max-w-7xl mx-auto px-4 py-10 bg-white min-h-screen">
         <h1 className="text-4xl text-black font-bold mb-4">Create a Post</h1>
@@ -313,6 +314,6 @@ export default function PostPage() {
           ))}
         </div>
       </main>
-    </>
+    </ProtectedRoute>
   );
 }

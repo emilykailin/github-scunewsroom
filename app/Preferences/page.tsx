@@ -4,6 +4,7 @@ import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../../firebase'; // Use centralized Firebase initialization
+import ProtectedRoute from '@/components/ProtectedRoute';
 import Navbar from '@/components/navbar';
 
 export default function PreferencesPage() {
@@ -64,7 +65,7 @@ export default function PreferencesPage() {
   };
 
   return (
-    <>
+    <ProtectedRoute>
       <Navbar />
       <main className="max-w-7xl mx-auto px-4 py-10 bg-white min-h-screen">
         <h1 className="text-4xl text-black font-bold mb-4">Choose Your Preferences</h1>
@@ -126,6 +127,6 @@ export default function PreferencesPage() {
           Set Role and Email
         </button>
       </main>
-    </>
+    </ProtectedRoute>
   );
 }

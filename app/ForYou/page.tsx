@@ -15,6 +15,7 @@ type Post = {
   imageUrl?: string;
   categories?: string[];
   createdAt?: { seconds: number; nanoseconds: number };
+  hidden?: boolean;
 };
 
 export default function ForYouPage() {
@@ -73,7 +74,7 @@ export default function ForYouPage() {
                 console.log('Total posts fetched:', allPosts.length);
 
         const filtered = allPosts.filter((post) =>
-          (post.categories || []).some((c) => combined.includes(c))
+          !post.hidden && (post.categories || []).some((c) => combined.includes(c))
         );
         console.log('Posts after filter:', filtered.length);
 

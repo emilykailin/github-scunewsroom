@@ -11,7 +11,7 @@ import { Timestamp } from 'firebase/firestore';
 
 export default function NewsroomPage() {
   const [posts, setPosts] = useState<
-    { id: string; title: string; content: string; imageUrl: string; createdAt: any; eventDate?: Timestamp; }[]
+    { id: string; title: string; content: string; imageUrl: string; createdAt: any; eventDate?: Timestamp; hidden?: boolean; }[]
   >([]);
   const [starredPosts, setStarredPosts] = useState<string[]>([]);
 
@@ -19,25 +19,28 @@ export default function NewsroomPage() {
     const fetchPosts = async () => {
       const postsQuery = query(collection(db, 'posts'), orderBy('createdAt', 'desc'));
       const querySnapshot = await getDocs(postsQuery);
-      const postsData = querySnapshot.docs.map((doc) => {
-        const data = doc.data() as {
-          title: string;
-          content: string;
-          imageUrl: string;
-          createdAt: any;
-          eventDate?: Timestamp; // testing added this
+      const postsData = querySnapshot.docs
+        .map((doc) => {
+          const data = doc.data() as {
+            title: string;
+            content: string;
+            imageUrl: string;
+            createdAt: any;
+            eventDate?: Timestamp; // testing added this
+            hidden?: boolean;
+          };
 
-        };
-      
-        return {
-          id: doc.id,
-          title: data.title,
-          content: data.content,
-          imageUrl: data.imageUrl,
-          createdAt: data.createdAt,
-          eventDate: data.eventDate,
-        };
-      });
+          return {
+            id: doc.id,
+            title: data.title,
+            content: data.content,
+            imageUrl: data.imageUrl,
+            createdAt: data.createdAt,
+            eventDate: data.eventDate,
+            hidden: data.hidden || false,
+          };
+        })
+        .filter(post => !post.hidden); // Filter out hidden posts
       
       setPosts(postsData);
     };

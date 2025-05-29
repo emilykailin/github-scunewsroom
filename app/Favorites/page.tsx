@@ -8,7 +8,7 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 
 export default function FavoritesPage() {
   const [starredPosts, setStarredPosts] = useState<
-    { id: string; title: string; content: string; imageUrl: string; createdAt: any }[]
+    { id: string; title: string; content: string; imageUrl: string; createdAt: any; hidden?: boolean; }[]
   >([]);
 
   useEffect(() => {
@@ -19,13 +19,19 @@ export default function FavoritesPage() {
       const userDoc = await getDoc(doc(db, 'users', user.uid));
       if (userDoc.exists()) {
         const starredPostIds = userDoc.data().starredPosts || [];
-        const posts = await Promise.all(
-          starredPostIds.map(async (postId: string) => {
-            const postDoc = await getDoc(doc(db, 'posts', postId));
-            return { id: postId, ...postDoc.data() };
-          })
-        );
-        setStarredPosts(posts);
+        const postsPromises = starredPostIds.map(async (postId: string) => {
+          const postDoc = await getDoc(doc(db, 'posts', postId));
+          if (postDoc.exists()) {
+            const postData = postDoc.data();
+            if (!postData.hidden) { // Check if the post is not hidden
+              return { id: postId, ...postData };
+            }
+          }
+          return null; 
+        });
+        const resolvedPosts = await Promise.all(postsPromises);
+        const validPosts = resolvedPosts.filter(post => post !== null) as { id: string; title: string; content: string; imageUrl: string; createdAt: any; hidden?: boolean }[];
+        setStarredPosts(validPosts);
       }
     };
 

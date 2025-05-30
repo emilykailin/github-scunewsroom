@@ -8,7 +8,7 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 
 export default function FavoritesPage() {
   const [starredPosts, setStarredPosts] = useState<
-    { id: string; title: string; content: string; imageUrl: string; createdAt: any; hidden?: boolean; }[]
+    { id: string; title: string; content: string; imageUrl: string; createdAt: any; eventDate?: any; hidden?: boolean; }[]
   >([]);
 
   useEffect(() => {
@@ -24,7 +24,14 @@ export default function FavoritesPage() {
           if (postDoc.exists()) {
             const postData = postDoc.data();
             if (!postData.hidden) { // Check if the post is not hidden
-              return { id: postId, ...postData };
+              return {
+                id: postId,
+                title: postData.title || '',
+                content: postData.content || '',
+                imageUrl: postData.imageUrl || '',
+                createdAt: postData.createdAt || null,
+                eventDate: postData.eventDate || null,
+              };
             }
           }
           return null; 
@@ -37,6 +44,22 @@ export default function FavoritesPage() {
 
     fetchStarredPosts();
   }, []);
+
+ const formatDate = (ts: any) => {
+  const d = ts.seconds ? new Date(ts.seconds * 1000) : new Date(ts);
+  const date = d.toLocaleDateString(undefined, {
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+  });
+  const weekday = d.toLocaleDateString(undefined, { weekday: 'long' });
+  return `${date} (${weekday})`;
+ };
+
+ const formatTime = (ts: any) => {
+  const d = ts.seconds ? new Date(ts.seconds * 1000) : new Date(ts);
+  return d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit', hour12: true });
+ };
 
   return (
     <ProtectedRoute>
@@ -58,6 +81,11 @@ export default function FavoritesPage() {
               <p className="text-sm text-gray-500">
                 Posted on {new Date(post.createdAt?.seconds * 1000).toLocaleString()}
               </p>
+              {post.eventDate && (
+                  <p className="text-sm text-blue-600">
+                   Event Date: {formatDate(post.eventDate)} {formatTime(post.eventDate)}
+                  </p>
+              )}
             </div>
           ))}
         </div>

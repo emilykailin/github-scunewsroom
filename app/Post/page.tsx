@@ -98,6 +98,15 @@ export default function PostPage() {
       console.error('Error fetching user posts:', error);
     }
   };
+  
+  
+  const now = new Date();
+  const futurePosts = posts.filter((post) =>
+    post.eventDate?.seconds ? new Date(post.eventDate.seconds * 1000) >= now : false
+  );
+  const pastPosts = posts.filter((post) =>
+    post.eventDate?.seconds ? new Date(post.eventDate.seconds * 1000) < now : false
+  );
 
   const handleCreatePost = async () => {
     if (!title || !content || !image || categories.length === 0 || !eventDate || (durationMode == 'custom' && !customEndDate)) {
@@ -122,8 +131,6 @@ export default function PostPage() {
       } else if (durationMode === 'custom' && customEndDate) {
         end = new Date(customEndDate);
       }
-
-      const now = new Date();
 
       if (start && start < now) {
         alert('Start time must be in the future.');
@@ -381,47 +388,90 @@ export default function PostPage() {
           Create Post
         </button>
 
-        <h2 className="text-xl font-bold mt-8">Your Posts</h2>
-        <div className="columns-1 md:columns-2 lg:columns-3 gap-4 space-y-4">
-          {posts.map((post) => (
-            <div key={post.id} className="break-inside-avoid bg-gray-100 shadow p-4 rounded mb-4">
-              <h2 className="text-xl font-bold">{post.title}</h2>
-              <p className="text-gray-600">{post.content}</p>
-              {post.imageUrl && (
-                <img
-                  src={post.imageUrl}
-                  alt={post.title}
-                  className="w-1/4 h-auto mt-4"
-                />
-              )}
+        <h2 className="text-xl font-bold mt-8">Upcoming Events</h2>
+<div className="columns-1 md:columns-2 lg:columns-3 gap-4 space-y-4">
+  {futurePosts.map((post) => (
+    <div key={post.id} className="break-inside-avoid bg-gray-100 shadow p-4 rounded mb-4">
+      <h2 className="text-xl font-bold">{post.title}</h2>
+      <p className="text-gray-600">{post.content}</p>
+      {post.imageUrl && (
+        <img
+          src={post.imageUrl}
+          alt={post.title}
+          className="w-1/4 h-auto mt-4"
+        />
+      )}
+      <p className="text-sm text-gray-500">
+        Categories: {post.categories.join(', ')}
+      </p>
+      <p className="text-sm text-gray-500">
+        Posted on {new Date(post.createdAt?.seconds * 1000).toLocaleString()}
+      </p>
+      {post.eventDate && (
+        <p className="text-sm text-gray-500">
+          Event Date: {formatDate(post.eventDate)} {formatTime(post.eventDate)}
+        </p>
+      )}
+      <div className="flex space-x-4 mt-4">
+        <button
+          onClick={() => router.push(`/EditP?id=${post.id}`)}
+          className="bg-yellow-500 text-white px-4 py-2 rounded"
+        >
+          Edit
+        </button>
+        <button
+          onClick={() => handleHidePost(post.id)}
+          className="bg-red-600 text-white px-4 py-2 rounded"
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+  ))}
+</div>
+
+      <h2 className="text-xl font-bold mt-12">Past Events</h2>
+      <div className="columns-1 md:columns-2 lg:columns-3 gap-4 space-y-4">
+        {pastPosts.map((post) => (
+          <div key={post.id} className="break-inside-avoid bg-gray-50 shadow p-4 rounded mb-4 opacity-70">
+            <h2 className="text-xl font-bold">{post.title}</h2>
+            <p className="text-gray-600">{post.content}</p>
+            {post.imageUrl && (
+              <img
+                src={post.imageUrl}
+                alt={post.title}
+                className="w-1/4 h-auto mt-4"
+              />
+            )}
+            <p className="text-sm text-gray-500">
+              Categories: {post.categories.join(', ')}
+            </p>
+            <p className="text-sm text-gray-500">
+              Posted on {new Date(post.createdAt?.seconds * 1000).toLocaleString()}
+            </p>
+            {post.eventDate && (
               <p className="text-sm text-gray-500">
-                Categories: {post.categories.join(', ')}
+                Event Date: {formatDate(post.eventDate)} {formatTime(post.eventDate)}{' '}
+                <span className="text-red-600 font-semibold ml-2">(Past Event)</span>
               </p>
-              <p className="text-sm text-gray-500">
-                Posted on {new Date(post.createdAt?.seconds * 1000).toLocaleString()}
-              </p>
-              {post.eventDate && (
-                <p className="text-sm text-gray-500">
-                  Event Date: {formatDate(post.eventDate)} {formatTime(post.eventDate)}
-                </p>
-              )}
-              <div className="flex space-x-4 mt-4">
-                <button
-                  onClick={() => router.push(`/EditP?id=${post.id}`)} // Navigate to EditP with the post ID as a query parameter
-                  className="bg-yellow-500 text-white px-4 py-2 rounded"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => handleHidePost(post.id)} // Use the hide functionality
-                  className="bg-red-600 text-white px-4 py-2 rounded"
-                >
-                  Delete
-                </button>
-              </div>
+            )}
+            <div className="flex space-x-4 mt-4">
+              <button
+                onClick={() => router.push(`/EditP?id=${post.id}`)}
+                className="bg-yellow-500 text-white px-4 py-2 rounded"
+              >
+                Edit
+              </button>
+              <button
+                onClick={() => handleHidePost(post.id)}
+                className="bg-red-600 text-white px-4 py-2 rounded"
+              >
+                Delete
+              </button>
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
+      </div>
       </main>
     </ProtectedRoute>
   );

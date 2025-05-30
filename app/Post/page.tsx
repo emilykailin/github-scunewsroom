@@ -100,7 +100,7 @@ export default function PostPage() {
   };
 
   const handleCreatePost = async () => {
-    if (!title || !content || !image || categories.length === 0) {
+    if (!title || !content || !image || categories.length === 0 || !eventDate || (durationMode == 'custom' && !customEndDate)) {
       alert('Please fill in all fields, upload an image, and select at least one category.');
       return;
     }

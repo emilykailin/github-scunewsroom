@@ -1,14 +1,16 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, collection } from 'firebase/firestore';
 import { db, auth } from '../../firebase';
 import Navbar from '@/components/navbar';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { Timestamp } from 'firebase/firestore';
+import { Star, Star as StarOutline } from "lucide-react";
 
 
 export default function FavoritesPage() {
+  const [starredPostIds, setStarredPostIds] = useState<string[]>([]);
   const [starredPosts, setStarredPosts] = useState<
     { id: string; title: string; content: string; imageUrl: string; createdAt: any; eventDate?: any; hidden?: boolean; }[]
   >([]);
@@ -41,6 +43,8 @@ export default function FavoritesPage() {
         const resolvedPosts = await Promise.all(postsPromises);
         const validPosts = resolvedPosts.filter(post => post !== null) as { id: string; title: string; content: string; imageUrl: string; createdAt: any; hidden?: boolean }[];
         setStarredPosts(validPosts);
+        setStarredPostIds(starredPostIds);
+
       }
     };
 
@@ -89,6 +93,53 @@ export default function FavoritesPage() {
   window.open(calendarUrl, '_blank');
 };
 
+const toggleStarPost = async (postId: string) => {
+  const user = auth.currentUser;
+  if (!user) return;
+
+  const isCurrentlyStarred = starredPostIds.includes(postId);
+  const updatedStarred = isCurrentlyStarred
+    ? starredPostIds.filter(id => id !== postId)
+    : [...starredPostIds, postId];
+
+  try {
+    await updateDoc(doc(db, 'users', user.uid), {
+      starredPosts: updatedStarred
+    });
+    setStarredPostIds(updatedStarred);
+if (isCurrentlyStarred) {
+  // Remove from local starredPosts
+  setStarredPosts(prev => prev.filter(p => p.id !== postId));
+} else {
+  // Fetch post data and add it to the local list
+  try {
+    const postDoc = await getDoc(doc(db, 'posts', postId));
+    if (postDoc.exists()) {
+      const postData = postDoc.data();
+      if (!postData.hidden) {
+        setStarredPosts(prev => [
+          ...prev,
+          {
+            id: postId,
+            title: postData.title || '',
+            content: postData.content || '',
+            imageUrl: postData.imageUrl || '',
+            createdAt: postData.createdAt || null,
+            eventDate: postData.eventDate || null,
+          },
+        ]);
+      }
+    }
+  } catch (err) {
+    console.error('Failed to fetch new favorite post', err);
+  }
+}
+
+  } catch (err) {
+    console.error('Failed to update favorites', err);
+  }
+};
+
 
   return (
     <ProtectedRoute>
@@ -98,7 +149,16 @@ export default function FavoritesPage() {
         <div className="columns-1 md:columns-2 lg:columns-3 gap-4 space-y-4">
           {starredPosts.map((post) => (
             <div key={post.id} className="break-inside-avoid bg-gray-100 shadow p-4 rounded mb-4">
-              <h2 className="text-xl font-bold">{post.title}</h2>
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold">{post.title}</h2>
+                <button onClick={() => toggleStarPost(post.id)} className="ml-2">
+                  {starredPostIds.includes(post.id) ? (
+                    <Star className="h-6 w-6 text-red-500" />
+                  ) : (
+                    <StarOutline className="h-6 w-6 text-black-300" />
+                  )}
+                </button>
+              </div>              
               <p className="text-gray-600">{post.content}</p>
               {post.imageUrl && (
                 <img

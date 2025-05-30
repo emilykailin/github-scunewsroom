@@ -15,6 +15,8 @@ type Post = {
   imageUrl?: string;
   categories?: string[];
   createdAt?: { seconds: number; nanoseconds: number };
+  eventDate?: { seconds: number; nanoseconds: number };
+  eventEndDate?: { seconds: number; nanoseconds: number };
   hidden?: boolean;
 };
 
@@ -89,6 +91,22 @@ export default function ForYouPage() {
     return () => unsubscribe();
   }, []);
 
+ const formatDate = (ts: any) => {
+  const d = ts.seconds ? new Date(ts.seconds * 1000) : new Date(ts);
+  const date = d.toLocaleDateString(undefined, {
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+  });
+  const weekday = d.toLocaleDateString(undefined, { weekday: 'long' });
+  return `${date} (${weekday})`;
+ };
+
+ const formatTime = (ts: any) => {
+  const d = ts.seconds ? new Date(ts.seconds * 1000) : new Date(ts);
+  return d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit', hour12: true });
+ };
+
   return (
     <ProtectedRoute>
       <Navbar />
@@ -121,6 +139,11 @@ export default function ForYouPage() {
                   </p>
                 ) : (
                   <p className="text-sm text-gray-500">Posted on unknown date</p>
+                )}
+                {post.eventDate && (
+                  <p className="text-sm text-blue-600">
+                     Event Date: {formatDate(post.eventDate)} {formatTime(post.eventDate)}
+                  </p>
                 )}
               </div>
             ))}

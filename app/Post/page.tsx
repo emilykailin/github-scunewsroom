@@ -123,6 +123,18 @@ export default function PostPage() {
         end = new Date(customEndDate);
       }
 
+      const now = new Date();
+
+      if (start && start < now) {
+        alert('Start time must be in the future.');
+        return;
+      }
+
+      if (end && end < now) {
+        alert('End time must be in the future.');
+        return;
+      }
+
       if (start && end && end <= start) {
         alert('End time must be after start time.');
         return;

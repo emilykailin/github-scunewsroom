@@ -16,8 +16,11 @@ export default function PostPage() {
   const [image, setImage] = useState<File | null>(null);
   const [categories, setCategories] = useState<string[]>([]); // New state for categories
   const [eventDate, setEventDate] = useState('');
+  const [durationMode, setDurationMode] = useState<'preset' | 'custom'>('preset');
+  const [duration, setDuration] = useState('60'); // default to 1 hour
+  const [customEndDate, setCustomEndDate] = useState('');
   const [posts, setPosts] = useState<
-    { id: string; title: string; content: string; imageUrl: string; createdAt: any; categories: string[] }[]
+    { id: string; title: string; content: string; imageUrl: string; createdAt: any; eventDate?: any; eventEndDate?: any; categories: string[] }[]
   >([]);
   const router = useRouter();
 
@@ -31,7 +34,7 @@ export default function PostPage() {
     'Club Sports',
     'Athletics',
     'Performing Arts',
-    'SCAPP',
+    'SCCAP',
     'ASG',
     'APB',
   ];
@@ -83,6 +86,8 @@ export default function PostPage() {
             content: data.content || '',
             imageUrl: data.imageUrl || '',
             createdAt: data.createdAt || null,
+            eventDate: data.eventDate || null,
+            eventEndDate: data.eventEndDate || null,
             categories: data.categories || [], // Include categories
             hidden: data.hidden || false,
           };
@@ -109,6 +114,21 @@ export default function PostPage() {
       await uploadBytes(imageRef, image);
       const imageUrl = await getDownloadURL(imageRef);
 
+      const start = eventDate ? new Date(eventDate) : null;
+
+      let end: Date | null = null;
+      if (durationMode === 'preset' && start) {
+        end = new Date(start.getTime() + parseInt(duration) * 60000);
+      } else if (durationMode === 'custom' && customEndDate) {
+        end = new Date(customEndDate);
+      }
+
+      if (start && end && end <= start) {
+        alert('End time must be after start time.');
+        return;
+      }
+
+
       // Save the post metadata to Firestore
       await addDoc(collection(db, 'posts'), {
         title,
@@ -118,7 +138,8 @@ export default function PostPage() {
         authorId: user.uid,
         author: user.email,
         createdAt: serverTimestamp(),
-        eventDate: eventDate ? new Date(eventDate) : null // Save it
+        eventDate: start,
+        eventEndDate: end, // Save it
 
       });
 
@@ -204,6 +225,17 @@ export default function PostPage() {
     );
   };
 
+  const formatDate = (ts: any) => {
+  const d = ts.seconds ? new Date(ts.seconds * 1000) : new Date(ts);
+  return d.toLocaleDateString(undefined, { year: 'numeric', month: 'numeric', day: 'numeric', weekday: 'long' });
+  };
+
+  const formatTime = (ts: any) => {
+    const d = ts.seconds ? new Date(ts.seconds * 1000) : new Date(ts);
+    return d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit', hour12: true });
+  };
+
+
   if (loading) {
     return <p>Loading...</p>; // Show a loading message while checking role
   }
@@ -236,12 +268,66 @@ export default function PostPage() {
           onChange={(e) => setImage(e.target.files?.[0] || null)}
           className="mb-4"
         />
+        <label className="block text-gray-700 font-medium mb-1">Event Date & Time</label>
         <input //TYPE DATE
-          type="date"
+          type="datetime-local"
           value={eventDate}
           onChange={(e) => setEventDate(e.target.value)}
           className="border p-2 mb-4 w-full rounded"
         /> 
+        <label className="block text-gray-700 font-medium mb-1">How do you want to set the event end time?</label>
+        <div className="flex gap-4 mb-4">
+          <label className="flex items-center gap-2">
+            <input
+              type="radio"
+              name="durationMode"
+              value="preset"
+              checked={durationMode === 'preset'}
+              onChange={() => setDurationMode('preset')}
+            />
+            Choose Duration
+          </label>
+          <label className="flex items-center gap-2">
+            <input
+              type="radio"
+              name="durationMode"
+              value="custom"
+              checked={durationMode === 'custom'}
+              onChange={() => setDurationMode('custom')}
+            />
+            Enter End Time
+          </label>
+        </div>
+
+        {durationMode === 'preset' && (
+          <>
+            <label className="block text-gray-700 font-medium mb-1">Duration</label>
+            <select
+              value={duration}
+              onChange={(e) => setDuration(e.target.value)}
+              className="border p-2 mb-4 w-full rounded"
+            >
+              <option value="30">30 minutes</option>
+              <option value="60">1 hour</option>
+              <option value="90">1.5 hours</option>
+              <option value="120">2 hours</option>
+            </select>
+          </>
+        )}
+
+        {durationMode === 'custom' && (
+          <>
+            <label className="block text-gray-700 font-medium mb-1">Custom End Time</label>
+            <input
+              type="datetime-local"
+              value={customEndDate}
+              onChange={(e) => setCustomEndDate(e.target.value)}
+              className="border p-2 mb-4 w-full rounded"
+            />
+          </>
+        )}
+
+                
         <div className="mb-4">
           <h2 className="text-lg font-semibold">Categories</h2>
           <div className="flex flex-wrap gap-2 pt-4">
@@ -296,6 +382,11 @@ export default function PostPage() {
               <p className="text-sm text-gray-500">
                 Posted on {new Date(post.createdAt?.seconds * 1000).toLocaleString()}
               </p>
+              {post.eventDate && post.eventEndDate && (
+                  <p className="text-sm text-gray-500">
+                    Event: {formatDate(post.eventDate)} – {formatTime(post.eventEndDate)}
+                  </p>
+                )}
               <div className="flex space-x-4 mt-4">
                 <button
                   onClick={() => router.push(`/EditP?id=${post.id}`)} // Navigate to EditP with the post ID as a query parameter

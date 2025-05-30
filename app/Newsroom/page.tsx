@@ -103,7 +103,10 @@ export default function NewsroomPage() {
       alert('No event date set.'); 
       return; 
     }
-    const startDate = new Date(post.eventDate); 
+    const startDate = post.eventDate instanceof Timestamp
+      ? post.eventDate.toDate()
+      : new Date(post.eventDate);
+      
     const endDate = new Date(startDate.getTime() + 60 *60 *1000); //rn, +1 hr
 
     const formatDate = (date: Date) =>
@@ -149,7 +152,28 @@ export default function NewsroomPage() {
               </p>
               {post.eventDate instanceof Timestamp && (
                 <p className="text-sm text-blue-600">
-                  Event Date: {post.eventDate.toDate().toLocaleDateString()}
+                  Event Date:{' '}
+                  {(() => {
+                    const date = post.eventDate.toDate();
+
+                    const datePart = date.toLocaleDateString(undefined, {
+                      year: 'numeric',
+                      month: 'numeric',
+                      day: 'numeric',
+                    });
+
+                    const weekday = date.toLocaleDateString(undefined, {
+                      weekday: 'long',
+                    });
+
+                    const timePart = date.toLocaleTimeString(undefined, {
+                      hour: 'numeric',
+                      minute: '2-digit',
+                      hour12: true,
+                    });
+
+                    return `${datePart} (${weekday}) ${timePart}`;
+                  })()}
                 </p>
               )}
               <button

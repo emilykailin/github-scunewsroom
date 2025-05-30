@@ -13,8 +13,10 @@ export default function RootPage() {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (user) {
         setIsAuthenticated(true); // User is logged in
+        document.title = 'Newsroom';
       } else {
         router.push('/LogIn'); // Redirect to LogIn if not logged in
+        document.title = 'Log In';
       }
     });
 

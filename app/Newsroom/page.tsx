@@ -49,7 +49,7 @@ export default function NewsroomPage() {
         })
         .filter((post) => !post.hidden);
 
-      // 🔁 Update expired posts or delete them
+      // Update expired posts or delete them
       for (const post of postsData) {
         if (post.eventEndDate instanceof Timestamp) {
           const endDate = post.eventEndDate.toDate();

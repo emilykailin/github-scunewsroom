@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { collection, query, where, getDocs, addDoc, serverTimestamp, doc, getDoc, deleteDoc, updateDoc, orderBy } from 'firebase/firestore';
 import { auth, db, storage } from '../../firebase';
 import { onAuthStateChanged } from 'firebase/auth';
+import { Timestamp } from 'firebase/firestore';
 
 import Navbar from '@/components/navbar';
 import ProtectedRoute from '@/components/ProtectedRoute';
@@ -86,6 +87,7 @@ export default function ForYouPage() {
       } finally {
         setLoading(false);
       }
+      
     });
 
     return () => unsubscribe();
@@ -106,6 +108,51 @@ export default function ForYouPage() {
   const d = ts.seconds ? new Date(ts.seconds * 1000) : new Date(ts);
   return d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit', hour12: true });
  };
+
+ const handleAddtoGCal = (post: any) => {
+  if (!post.eventDate) {
+    alert('No event date set.');
+    return;
+  }
+
+  const startDate = post.eventDate instanceof Timestamp
+    ? post.eventDate.toDate()
+    : new Date(post.eventDate);
+
+  const endDate =
+    post.eventEndDate instanceof Timestamp
+      ? post.eventEndDate.toDate()
+      : new Date(startDate.getTime() + 60 * 60 * 1000); // default 1 hour later
+
+  const formatDate = (date: Date) =>
+    date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+
+  const calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE` +
+    `&text=${encodeURIComponent(post.title)}` +
+    `&dates=${formatDate(startDate)}/${formatDate(endDate)}` +
+    `&details=${encodeURIComponent(post.content)}`;
+
+  window.open(calendarUrl, '_blank');
+};
+
+
+const [starredPosts, setStarredPosts] = useState<string[]>([]);
+const toggleStarPost = async (postId: string) => {
+  const user = auth.currentUser;
+  if (!user) return;
+
+  const userDocRef = doc(db, 'users', user.uid);
+  const updatedStarredPosts = starredPosts.includes(postId)
+    ? starredPosts.filter((id) => id !== postId)
+    : [...starredPosts, postId];
+
+  try {
+    await updateDoc(userDocRef, { starredPosts: updatedStarredPosts });
+    setStarredPosts(updatedStarredPosts);
+  } catch (err) {
+    console.error('Failed to update favorites', err);
+  }
+};
 
   return (
     <ProtectedRoute>
@@ -145,6 +192,14 @@ export default function ForYouPage() {
                      Event Date: {formatDate(post.eventDate)} {formatTime(post.eventDate)}
                   </p>
                 )}
+
+                <button
+                  onClick={() => handleAddtoGCal(post)}
+                  className="bg-yellow-400 hover:bg-gray-400 text-white mt-4 px-4 py-2 rounded cursor-pointer"
+                >
+                  Add to Calendar
+                </button>
+
               </div>
             ))}
           </div>

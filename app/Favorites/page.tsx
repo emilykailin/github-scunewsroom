@@ -5,6 +5,8 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db, auth } from '../../firebase';
 import Navbar from '@/components/navbar';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import { Timestamp } from 'firebase/firestore';
+
 
 export default function FavoritesPage() {
   const [starredPosts, setStarredPosts] = useState<
@@ -61,6 +63,33 @@ export default function FavoritesPage() {
   return d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit', hour12: true });
  };
 
+ const handleAddtoGCal = (post: any) => {
+  if (!post.eventDate) {
+    alert('No event date set.');
+    return;
+  }
+
+  const startDate = post.eventDate instanceof Timestamp
+    ? post.eventDate.toDate()
+    : new Date(post.eventDate);
+
+  const endDate =
+    post.eventEndDate instanceof Timestamp
+      ? post.eventEndDate.toDate()
+      : new Date(startDate.getTime() + 60 * 60 * 1000); // default 1 hour later
+
+  const formatDate = (date: Date) =>
+    date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+
+  const calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE` +
+    `&text=${encodeURIComponent(post.title)}` +
+    `&dates=${formatDate(startDate)}/${formatDate(endDate)}` +
+    `&details=${encodeURIComponent(post.content)}`;
+
+  window.open(calendarUrl, '_blank');
+};
+
+
   return (
     <ProtectedRoute>
       <Navbar />
@@ -86,6 +115,13 @@ export default function FavoritesPage() {
                    Event Date: {formatDate(post.eventDate)} {formatTime(post.eventDate)}
                   </p>
               )}
+              <button
+                onClick={() => handleAddtoGCal(post)}
+                className="bg-yellow-400 hover:bg-gray-400 text-white mt-4 px-4 py-2 rounded cursor-pointer"
+              >
+                Add to Calendar
+              </button>
+
             </div>
           ))}
         </div>

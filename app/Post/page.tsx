@@ -225,10 +225,16 @@ export default function PostPage() {
     );
   };
 
-  const formatDate = (ts: any) => {
+ const formatDate = (ts: any) => {
   const d = ts.seconds ? new Date(ts.seconds * 1000) : new Date(ts);
-  return d.toLocaleDateString(undefined, { year: 'numeric', month: 'numeric', day: 'numeric', weekday: 'long' });
-  };
+  const date = d.toLocaleDateString(undefined, {
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+  });
+  const weekday = d.toLocaleDateString(undefined, { weekday: 'long' });
+  return `${date} (${weekday})`;
+ };
 
   const formatTime = (ts: any) => {
     const d = ts.seconds ? new Date(ts.seconds * 1000) : new Date(ts);
@@ -382,11 +388,11 @@ export default function PostPage() {
               <p className="text-sm text-gray-500">
                 Posted on {new Date(post.createdAt?.seconds * 1000).toLocaleString()}
               </p>
-              {post.eventDate && post.eventEndDate && (
-                  <p className="text-sm text-gray-500">
-                    Event: {formatDate(post.eventDate)} – {formatTime(post.eventEndDate)}
-                  </p>
-                )}
+              {post.eventDate && (
+                <p className="text-sm text-gray-500">
+                  Event Date: {formatDate(post.eventDate)} {formatTime(post.eventDate)}
+                </p>
+              )}
               <div className="flex space-x-4 mt-4">
                 <button
                   onClick={() => router.push(`/EditP?id=${post.id}`)} // Navigate to EditP with the post ID as a query parameter

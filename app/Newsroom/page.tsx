@@ -11,7 +11,7 @@ import { Timestamp } from 'firebase/firestore';
 
 export default function NewsroomPage() {
   const [posts, setPosts] = useState<
-    { id: string; title: string; content: string; imageUrl: string; createdAt: any; eventDate?: Timestamp; hidden?: boolean; }[]
+    { id: string; title: string; content: string; imageUrl: string; createdAt: any; eventDate?: Timestamp; eventEndDate?: Timestamp | null; hidden?: boolean; }[]
   >([]);
   const [starredPosts, setStarredPosts] = useState<string[]>([]);
 
@@ -26,7 +26,8 @@ export default function NewsroomPage() {
             content: string;
             imageUrl: string;
             createdAt: any;
-            eventDate?: Timestamp; // testing added this
+            eventDate?: Timestamp; 
+            eventEndDate?: Timestamp | null;
             hidden?: boolean;
           };
 
@@ -37,6 +38,7 @@ export default function NewsroomPage() {
             imageUrl: data.imageUrl,
             createdAt: data.createdAt,
             eventDate: data.eventDate,
+            eventEndDate: data.eventEndDate || null,
             hidden: data.hidden || false,
           };
         })
@@ -107,7 +109,10 @@ export default function NewsroomPage() {
       ? post.eventDate.toDate()
       : new Date(post.eventDate);
       
-    const endDate = new Date(startDate.getTime() + 60 *60 *1000); //rn, +1 hr
+    const endDate =
+      post.eventEndDate instanceof Timestamp
+        ? post.eventEndDate.toDate()
+        : new Date(startDate.getTime() + 60 * 60 * 1000);
 
     const formatDate = (date: Date) =>
       date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
@@ -150,32 +155,51 @@ export default function NewsroomPage() {
               <p className="text-sm text-gray-500">
                 Posted on {new Date(post.createdAt?.seconds * 1000).toLocaleString()}
               </p>
-              {post.eventDate instanceof Timestamp && (
-                <p className="text-sm text-blue-600">
-                  Event Date:{' '}
-                  {(() => {
-                    const date = post.eventDate.toDate();
+            {post.eventDate instanceof Timestamp && (
+              <p className="text-sm text-blue-600">
+                Event Date:{' '}
+                {(() => {
+                  const start = post.eventDate.toDate();
 
-                    const datePart = date.toLocaleDateString(undefined, {
-                      year: 'numeric',
-                      month: 'numeric',
-                      day: 'numeric',
-                    });
+                  const datePart = start.toLocaleDateString(undefined, {
+                    year: 'numeric',
+                    month: 'numeric',
+                    day: 'numeric',
+                  });
 
-                    const weekday = date.toLocaleDateString(undefined, {
-                      weekday: 'long',
-                    });
+                  const weekday = start.toLocaleDateString(undefined, { weekday: 'long' });
 
-                    const timePart = date.toLocaleTimeString(undefined, {
+                  const startTime = start.toLocaleTimeString(undefined, {
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: true,
+                  });
+
+                  if (post.eventEndDate instanceof Timestamp) {
+                    const end = post.eventEndDate.toDate();
+                    const endTime = end.toLocaleTimeString(undefined, {
                       hour: 'numeric',
                       minute: '2-digit',
                       hour12: true,
                     });
 
-                    return `${datePart} (${weekday}) ${timePart}`;
-                  })()}
-                </p>
-              )}
+                    const durationMs = end.getTime() - start.getTime();
+                    const durationMin = Math.floor(durationMs / 60000);
+                    const hours = Math.floor(durationMin / 60);
+                    const minutes = durationMin % 60;
+
+                    const durationText = hours
+                      ? `${hours} hr${hours > 1 ? 's' : ''}${minutes ? ` ${minutes} min` : ''}`
+                      : `${minutes} min`;
+
+                    return `${datePart} (${weekday}) ${startTime} – ${endTime} (${durationText})`;
+                  }
+
+                  return `${datePart} (${weekday}) ${startTime}`;
+                })()}
+              </p>
+            )}
+
               <button
                 onClick={() => handleAddtoGCal(post)}
                 className="bg-yellow-400 hover:bg-gray-400 text-white mt-4 px-4 py-2 rounded cursor-pointer"

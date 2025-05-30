@@ -44,7 +44,14 @@ export default function NewsroomPage() {
         })
         .filter(post => !post.hidden); // Filter out hidden posts
       
-      setPosts(postsData);
+      const now = new Date();
+      const upcomingPosts = postsData.filter((post) => {
+        if (!post.eventDate) return true; // keep posts without an eventDate
+        const postDate = post.eventDate instanceof Timestamp ? post.eventDate.toDate() : new Date(post.eventDate);
+        return postDate >= now;
+      });
+
+      setPosts(upcomingPosts);
     };
 
     const fetchStarredPosts = async () => {

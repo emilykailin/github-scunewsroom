@@ -2,12 +2,13 @@
 
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useEffect, useState } from 'react';
-import { collection, getDocs, getDoc, query, orderBy, updateDoc, doc } from 'firebase/firestore';
+import { collection, getDocs, getDoc, query, orderBy, updateDoc, doc, deleteDoc} from 'firebase/firestore';
 import { db, auth } from '../../firebase';
 import Navbar from '@/components/navbar';
 import { Star, Star as StarOutline } from "lucide-react";
 import { generateICS } from './generateICS';
 import { Timestamp } from 'firebase/firestore';
+
 
 export default function NewsroomPage() {
   const [posts, setPosts] = useState<
@@ -18,7 +19,11 @@ export default function NewsroomPage() {
   useEffect(() => {
     const fetchPosts = async () => {
       const postsQuery = query(collection(db, 'posts'), orderBy('createdAt', 'desc'));
-      const querySnapshot = await getDocs(postsQuery);
+      const querySnapshot = await getDocs(postsQuery);      
+      const now = new Date();
+      const expiredCutoff = new Date();
+      expiredCutoff.setDate(now.getDate() - 7); // 7 days ago
+
       const postsData = querySnapshot.docs
         .map((doc) => {
           const data = doc.data() as {
@@ -26,7 +31,7 @@ export default function NewsroomPage() {
             content: string;
             imageUrl: string;
             createdAt: any;
-            eventDate?: Timestamp; 
+            eventDate?: Timestamp;
             eventEndDate?: Timestamp | null;
             hidden?: boolean;
           };
@@ -42,9 +47,29 @@ export default function NewsroomPage() {
             hidden: data.hidden || false,
           };
         })
-        .filter(post => !post.hidden); // Filter out hidden posts
+        .filter((post) => !post.hidden);
+
+      // 🔁 Update expired posts or delete them
+      for (const post of postsData) {
+        if (post.eventEndDate instanceof Timestamp) {
+          const endDate = post.eventEndDate.toDate();
+
+          try {
+            const postRef = doc(db, 'posts', post.id);
+
+            if (endDate < now) {
+              if (endDate < expiredCutoff) {
+                await deleteDoc(postRef); // Delete posts more than 7 days expired
+              } else {
+                await updateDoc(postRef, { expired: true }); // Flag recent expired posts
+              }
+            }
+          } catch (error) {
+            console.error(`Error processing expiration for post ${post.id}`, error);
+          }
+        }
+      }
       
-      const now = new Date();
       const upcomingPosts = postsData.filter((post) => {
         if (!post.eventDate) return true; // keep posts without an eventDate
         const postDate = post.eventDate instanceof Timestamp ? post.eventDate.toDate() : new Date(post.eventDate);

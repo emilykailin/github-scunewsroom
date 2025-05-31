@@ -172,6 +172,20 @@ const toggleStarPost = async (postId: string) => {
                 className="break-inside-avoid bg-gray-100 shadow p-4 rounded mb-4"
               >
                 <h2 className="text-xl font-bold">{post.title}</h2>
+                <div className="flex items-center gap-2">
+                  {post.categories?.map((cat) => (
+                    <span
+                      key={cat}
+                      className="text-xs bg-gray-200 px-2 py-1 rounded inline-block"
+                    >
+                      {cat}
+                    </span>
+                  )) ?? (
+                    <span className="text-xs bg-gray-200 px-2 py-1 rounded">
+                      Uncategorized
+                    </span>
+                  )}
+                </div>
                 <p className="text-gray-600">{post.content}</p>
                 {post.imageUrl && (
                   <img

@@ -12,7 +12,7 @@ import { Timestamp } from 'firebase/firestore';
 
 export default function NewsroomPage() {
   const [posts, setPosts] = useState<
-    { id: string; title: string; content: string; imageUrl: string; createdAt: any; eventDate?: Timestamp; eventEndDate?: Timestamp | null; hidden?: boolean; }[]
+    { id: string; title: string; content: string; imageUrl: string; createdAt: any; eventDate?: Timestamp; eventEndDate?: Timestamp | null; hidden?: boolean; categories?: string[];  }[]
   >([]);
   const [starredPosts, setStarredPosts] = useState<string[]>([]);
 
@@ -34,6 +34,7 @@ export default function NewsroomPage() {
             eventDate?: Timestamp;
             eventEndDate?: Timestamp | null;
             hidden?: boolean;
+            categories?: string[];
           };
 
           return {
@@ -45,6 +46,7 @@ export default function NewsroomPage() {
             eventDate: data.eventDate,
             eventEndDate: data.eventEndDate || null,
             hidden: data.hidden || false,
+            categories: Array.isArray(data.categories) ? data.categories : [data.categories || "Uncategorized"],
           };
         })
         .filter((post) => !post.hidden);
@@ -166,16 +168,30 @@ export default function NewsroomPage() {
           {posts.map((post) => (
             <div key={post.id} className="break-inside-avoid bg-gray-100 shadow p-4 rounded mb-4">
               <h2 className="text-xl font-bold">{post.title}</h2>
-              <button
-                onClick={() => toggleStarPost(post.id)}
-                className="py-2 rounded cursor-pointer"
-              >
-                {starredPosts.includes(post.id) ? (
-                  <Star className="h-6 w-6 text-red-500" />
-                ) : (
-                  <StarOutline className="h-6 w-6 text-black-300" />
-                )}
-              </button>
+              <div className="flex items-center gap-2">
+              {post.categories?.map((cat) => (
+                <span
+                  key={cat}
+                  className="text-xs bg-gray-200 px-2 py-1 rounded inline-block"
+                >
+                  {cat}
+                </span>
+              )) ?? (
+                <span className="text-xs bg-gray-200 px-2 py-1 rounded">
+                  Uncategorized
+                </span>
+              )}
+                <button
+                  onClick={() => toggleStarPost(post.id)}
+                  className="py-1 cursor-pointer"
+                >
+                  {starredPosts.includes(post.id) ? (
+                    <Star className="h-5 w-5 text-red-500" />
+                  ) : (
+                    <StarOutline className="h-5 w-5 text-black-300" />
+                  )}
+                </button>
+              </div>
               <p className="text-gray-600">{post.content}</p>
               {post.imageUrl && (
                 <img

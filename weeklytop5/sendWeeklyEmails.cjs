@@ -83,7 +83,10 @@ const generateEmailHTML = (posts = []) => {
               <p style="margin: 0;"><strong>Date:</strong> ${formattedDate}</p>
               ${post.location ? `<p style="margin: 0;"><strong>Location:</strong> ${post.location}</p>` : ''}
               <p style="margin: 8px 0;">${post.content?.slice(0, 200) || ''}...</p>
-              <a href="#" style="display: inline-block; margin-top: 10px; background-color: #a82434; color: white; text-decoration: none; padding: 10px 16px; border-radius: 4px;">Learn More</a>
+              <a href="https://github-scunewsroom-git-finalmain-matthew-vds-projects.vercel.app/?_vercel_share=F2VXmW5z20q2LgjuVUVywh0R8BmU87yf"
+                 style="display: inline-block; margin-top: 10px; background-color: #a82434; color: white; text-decoration: none; padding: 10px 16px; border-radius: 4px;">
+                 Learn More
+              </a>
             </td>
           </tr>
         </table>
